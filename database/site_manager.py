@@ -1,10 +1,10 @@
 from database.db_session import db_session
 from database.models import Site
-import datetime
+from datetime import datetime
 from easyrpa.tools import request_tool 
 
 @db_session
-def add_site(site_name, site_description,session=None):
+def add_site(session,site_name, site_description):
     new_site = Site(
         site_name=site_name,
         site_description=site_description,
@@ -18,7 +18,7 @@ def add_site(site_name, site_description,session=None):
     return new_site.id
 
 @db_session
-def update_site(site_id, site_name=None, site_description=None, is_active=None,session=None):
+def update_site(session,site_id, site_name=None, site_description=None, is_active=None):
     site = session.query(Site).filter_by(id=site_id).first()
     if site:
         if site_name:
@@ -36,7 +36,7 @@ def update_site(site_id, site_name=None, site_description=None, is_active=None,s
         return None
 
 @db_session
-def delete_site(site_id,session=None):
+def delete_site(session,site_id):
     site = session.query(Site).filter_by(id=site_id).first()
     if site:
         session.delete(site)
@@ -46,9 +46,9 @@ def delete_site(site_id,session=None):
         return False
 
 @db_session
-def get_site(site_id,session=None):
+def get_site(session,site_id):
     return session.query(Site).filter_by(id=site_id).first()
 
 @db_session
-def get_sites(session=None):
+def get_sites(session):
     return session.query(Site).all()
