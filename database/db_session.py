@@ -35,7 +35,6 @@ def db_session(func):
         try:
             session = SessionLocal()
             result = func(session,*args, **kwargs)
-            #session.commit()
             return result
         except SQLAlchemyError as e:
             if session:
