@@ -3,6 +3,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from functools import wraps
 from sqlalchemy.exc import SQLAlchemyError
+from easyrpa.tools.logs_tool import log_db_error
+from sqlalchemy import orm
+from easyrpa.tools import request_tool 
+from datetime import datetime
 
 # 读取数据库配置
 config = configparser.ConfigParser()
@@ -39,8 +43,23 @@ def db_session(func):
         except SQLAlchemyError as e:
             if session:
                 session.rollback()
+            log_db_error("db_session","sqlalchemy error",args,e)
+            raise e
+        except Exception as e:
+            log_db_error("db_session","db operation failed",args,e)
             raise e
         finally:
             if session:
                 session.close()
     return wrapper
+
+def update_common_fields(obj):     
+    obj.modify_id = request_tool.get_current_header().user_id
+    obj.modify_time = datetime.now()
+    obj.trace_id = request_tool.get_current_header().trace_id
+
+def create_common_fields(obj):    
+    obj.created_id = request_tool.get_current_header().user_id
+    obj.created_time = datetime.now()
+    obj.trace_id = request_tool.get_current_header().trace_id
+    obj.is_active=True
