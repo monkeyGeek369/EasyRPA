@@ -6,6 +6,9 @@ from easyrpa.tools import request_tool
 class SiteDbManager:
     @db_session
     def add_site(session,site_name, site_description):
+        # 不可以创建已经存在的site_name
+        if session.query(Site).filter(Site.site_name == site_name).first():
+            raise ValueError("Site name already exists")
         new_site = Site(
             site_name=site_name,
             site_description=site_description
@@ -18,6 +21,10 @@ class SiteDbManager:
     @db_session
     def update_site(session,site_id, site_name=None, site_description=None, is_active=None):
         site = session.query(Site).filter_by(id=site_id).first()
+        # 名称不可以修改为出了自己之外的与其它site相同
+        if site_name and session.query(Site).filter(Site.site_name == site_name).filter(Site.id != site_id).first():
+            raise ValueError("Site name already exists")
+
         if site:
             if site_name:
                 site.site_name = site_name

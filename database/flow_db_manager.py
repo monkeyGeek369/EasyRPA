@@ -12,6 +12,9 @@ class FlowDbManager:
 
     @db_session
     def create_flow(session, flow: Flow):
+        # 不可以创建已经存在的flow_code
+        if session.query(Flow).filter(Flow.flow_code == flow.flow_code).first():
+            raise ValueError("Flow code already exists")
         create_common_fields(flow)
         session.add(flow)
         session.commit()
