@@ -10,7 +10,7 @@ metadata = Base.metadata
 # sqlacodegen --outfile=models.py mysql+pymysql://root:w/7714995779@127.0.0.1/easy_rpa
 
 
-class DispatchDatum(Base):
+class DispatchData(Base):
     __tablename__ = 'dispatch_data'
     __table_args__ = {'comment': '调度数据表'}
 
