@@ -1,5 +1,8 @@
 from database.db_session import db_session,update_common_fields,create_common_fields
 from database.models import FlowTask
+from database.flow_task_log_db_manager import FlowTaskLogDBManager
+from database.models import FlowTaskLog
+from easyrpa.enums.log_type_enum import LogTypeEnum
 
 
 class FlowTaskDBManager:
@@ -45,6 +48,14 @@ class FlowTaskDBManager:
         create_common_fields(flow_task)
         session.add(flow_task)
         session.commit()
+        
+        # 创建流程任务日志
+        flow_task_log = FlowTaskLog()
+        flow_task_log.task_id = flow_task.id
+        flow_task_log.log_type = LogTypeEnum.TXT.code
+        flow_task_log.message = "流程任务创建成功"
+        FlowTaskLogDBManager.create_flow_task_log(flow_task_log)
+
         return flow_task
 
     @db_session
