@@ -7,7 +7,7 @@ from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from easyrpa.models.scripty_exe_result import ScriptExeResult
 
 def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
-                             ,flow_exe_script:str,sub_source:int) -> bool:
+                             ,flow_exe_script:str,sub_source:int,flow_config:str) -> bool:
     """执行校验脚本
 
     Args:
@@ -23,7 +23,7 @@ def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
         bool: true
     """
     # 执行脚本
-    script_result = script_exe_base(flow_exe_env,flow_standard_message,flow_exe_script,sub_source)
+    script_result = script_exe_base(flow_exe_env,flow_standard_message,flow_exe_script,sub_source,flow_config)
 
     # 执行结果处理
     if not script_result:
@@ -34,10 +34,10 @@ def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
     return True
 
 def request_adapter_script_exe(flow_exe_env:str,flow_standard_message:str
-                             ,flow_exe_script:str,sub_source:int) -> dict:
+                             ,flow_exe_script:str,sub_source:int,flow_config:str) -> dict:
     
     # 执行脚本
-    script_result = script_exe_base(flow_exe_env,flow_standard_message,flow_exe_script,sub_source)
+    script_result = script_exe_base(flow_exe_env,flow_standard_message,flow_exe_script,sub_source,flow_config)
 
     # 执行结果处理
     if not script_result:
@@ -53,7 +53,7 @@ def request_adapter_script_exe(flow_exe_env:str,flow_standard_message:str
 
 
 def rpa_result_script_exe(flow_exe_env:str,rpa_result_message:str
-                             ,flow_exe_script:str,sub_source:int) -> ScriptExeResult:
+                             ,flow_exe_script:str,sub_source:int,flow_config:str) -> ScriptExeResult:
     """执行rpa结果处理脚本
 
     Args:
@@ -67,11 +67,12 @@ def rpa_result_script_exe(flow_exe_env:str,rpa_result_message:str
     """
     
     # 执行脚本
-    script_result = script_exe_base(flow_exe_env,rpa_result_message,flow_exe_script,sub_source)
+    script_result = script_exe_base(flow_exe_env,rpa_result_message,flow_exe_script,sub_source,flow_config)
     return script_result
 
 def script_exe_base(flow_exe_env:str,flow_standard_message:str
-                             ,flow_exe_script:str,sub_source:int) -> ScriptExeResult:
+                             ,flow_exe_script:str,sub_source:int
+                             ,flow_config:str) -> ScriptExeResult:
     """脚本执行基础方法
 
     Args:
@@ -85,10 +86,10 @@ def script_exe_base(flow_exe_env:str,flow_standard_message:str
     """
 
     # 构建执行参数
-    script_param = ScriptExeParamModel()
-    script_param.header = request_tool.get_current_header()
-    script_param.source = sub_source
-    script_param.standard = any_to_str_dict(flow_standard_message)
+    script_param = ScriptExeParamModel(header=request_tool.get_current_header()
+                                       ,source=sub_source
+                                       ,standard=any_to_str_dict(flow_standard_message)
+                                       ,flow_config=any_to_str_dict(flow_config))
     param = any_to_str_dict(script_param)
 
     # 调用脚本执行器

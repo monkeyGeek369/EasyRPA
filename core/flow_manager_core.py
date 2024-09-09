@@ -26,6 +26,10 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         flow = FlowDbManager.get_flow_by_id(dto.flow_id)
         if not flow:
             raise EasyRpaException("""flow {} not found""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
+        if not flow.request_check_script:
+            raise EasyRpaException("""flow {} not found check script""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
+        if not flow.request_adapt_script:
+            raise EasyRpaException("""flow {} not found adapt script""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
 
         # 查询流程配置
         flow_configuration = FlowConfigurationDBManager.get_flow_configuration_by_id(dto.flow_configuration_id)
@@ -33,10 +37,10 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
             raise EasyRpaException("""flow configuration {} not found""".format(dto.flow_configuration_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
         
         # 执行校验脚本
-        request_check_script_exe("playwright",dto.request_standard_message,flow_configuration.check_script,dto.sub_source)
+        request_check_script_exe("playwright",dto.request_standard_message,flow.request_check_script,dto.sub_source,flow_configuration.config_json)
 
         # 执行适配脚本-获取流程报文字典
-        dict_adapter_result = request_adapter_script_exe("playwright",dto.request_standard_message,flow_configuration.adapter_script,dto.sub_source)
+        dict_adapter_result = request_adapter_script_exe("playwright",dto.request_standard_message,flow.request_adapt_script,dto.sub_source,flow_configuration.config_json)
 
         # 创建流程任务
         flow_task.flow_id = dto.flow_id

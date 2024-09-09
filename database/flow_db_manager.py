@@ -7,7 +7,7 @@ class FlowDbManager:
         return session.query(Flow).all()
 
     @db_session
-    def get_flow_by_id(session, flow_id):
+    def get_flow_by_id(session, flow_id) -> Flow:
         return session.query(Flow).filter(Flow.id == flow_id).first()
 
     @db_session
