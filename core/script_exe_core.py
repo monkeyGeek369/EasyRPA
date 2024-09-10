@@ -5,6 +5,8 @@ from easyrpa.tools.transfer_tools import any_to_str_dict
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from easyrpa.models.scripty_exe_result import ScriptExeResult
+import json
+from dataclasses import asdict
 
 def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
                              ,flow_exe_script:str,sub_source:int,flow_config:str) -> bool:
@@ -90,7 +92,9 @@ def script_exe_base(flow_exe_env:str,flow_standard_message:str
                                        ,source=sub_source
                                        ,standard=any_to_str_dict(flow_standard_message)
                                        ,flow_config=any_to_str_dict(flow_config))
-    param = any_to_str_dict(script_param)
+    
+    dict_data = asdict(script_param)
+    param = any_to_str_dict(json.dumps(dict_data))
 
     # 调用脚本执行器
     env_activate_command = env_activate_command_builder(flow_exe_env)
