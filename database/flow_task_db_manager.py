@@ -52,7 +52,7 @@ class FlowTaskDBManager:
         # 创建流程任务日志
         flow_task_log = FlowTaskLog()
         flow_task_log.task_id = flow_task.id
-        flow_task_log.log_type = LogTypeEnum.TXT.code
+        flow_task_log.log_type = LogTypeEnum.TXT.value[1]
         flow_task_log.message = "流程任务创建成功"
         FlowTaskLogDBManager.create_flow_task_log(flow_task_log)
 

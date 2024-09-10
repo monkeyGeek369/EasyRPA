@@ -47,7 +47,7 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         flow_task.site_id = flow.site_id
         flow_task.biz_no = dto.biz_no
         flow_task.sub_source = dto.sub_source
-        flow_task.status = FlowTaskStatusEnum.WAIT_EXE.code
+        flow_task.status = FlowTaskStatusEnum.WAIT_EXE.value[1]
         flow_task.request_standard_message = dto.request_standard_message
         flow_task.flow_standard_message = json.dumps(dict_adapter_result)
         FlowTaskDBManager.create_flow_task(flow_task)

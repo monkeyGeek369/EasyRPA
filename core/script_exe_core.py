@@ -1,12 +1,14 @@
 from easyrpa.script_exe.subprocess_python_script import subprocess_script_run,env_activate_command_builder
 from easyrpa.models.base.script_exe_param_model import ScriptExeParamModel
 from easyrpa.tools import request_tool
-from easyrpa.tools.transfer_tools import any_to_str_dict
+from easyrpa.tools.transfer_tools import any_to_str_dict_first_level,dict_to_str_dict_first_level
+from easyrpa.tools.str_tools import str_to_str_dict
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from easyrpa.models.scripty_exe_result import ScriptExeResult
 import json
 from dataclasses import asdict
+from easyrpa.tools import logs_tool
 
 def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
                              ,flow_exe_script:str,sub_source:int,flow_config:str) -> bool:
@@ -50,7 +52,7 @@ def request_adapter_script_exe(flow_exe_env:str,flow_standard_message:str
         raise EasyRpaException("script result result is null",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.code,None,script_result.print_str)
     
     # 执行结果转dict
-    dict_result = any_to_str_dict(script_result.result)
+    dict_result = str_to_str_dict(script_result.result)
     return dict_result
 
 
@@ -90,11 +92,14 @@ def script_exe_base(flow_exe_env:str,flow_standard_message:str
     # 构建执行参数
     script_param = ScriptExeParamModel(header=request_tool.get_current_header()
                                        ,source=sub_source
-                                       ,standard=any_to_str_dict(flow_standard_message)
-                                       ,flow_config=any_to_str_dict(flow_config))
+                                       ,standard=str_to_str_dict(flow_standard_message)
+                                       ,flow_config=str_to_str_dict(flow_config))
     
     dict_data = asdict(script_param)
-    param = any_to_str_dict(json.dumps(dict_data))
+    param = any_to_str_dict_first_level(json.dumps(dict_data,default=str))
+
+    # 日志记录参数传递
+    logs_tool.log_business_info("script_exe_base","脚本执行参数记录",param)
 
     # 调用脚本执行器
     env_activate_command = env_activate_command_builder(flow_exe_env)
