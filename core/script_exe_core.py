@@ -6,8 +6,8 @@ from easyrpa.tools.str_tools import str_to_str_dict
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from easyrpa.models.scripty_exe_result import ScriptExeResult
-import json
 from dataclasses import asdict
+import easyrpa.tools.debug_tools as my_debug
 from easyrpa.tools import logs_tool
 
 def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
@@ -39,6 +39,21 @@ def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
 
 def request_adapter_script_exe(flow_exe_env:str,flow_standard_message:str
                              ,flow_exe_script:str,sub_source:int,flow_config:str) -> dict:
+    """执行适配脚本
+
+    Args:
+        flow_exe_env (str): 流程执行环境
+        flow_standard_message (str): 流程标准消息
+        flow_exe_script (str): 流程执行脚本
+        sub_source (int): 来源
+        flow_config (str): 流程配置
+
+    Raises:
+        EasyRpaException: 异常信息
+
+    Returns:
+        dict: 返回结果
+    """
     
     # 执行脚本
     script_result = script_exe_base(flow_exe_env,flow_standard_message,flow_exe_script,sub_source,flow_config)
@@ -90,14 +105,8 @@ def script_exe_base(flow_exe_env:str,flow_standard_message:str
     """
 
     # 构建执行参数
-    script_param = ScriptExeParamModel(header=request_tool.get_current_header()
-                                       ,source=sub_source
-                                       ,standard=str_to_str_dict(flow_standard_message)
-                                       ,flow_config=str_to_str_dict(flow_config))
+    param = my_debug.env_params_build(header=None,sub_source=sub_source,flow_standard_message=flow_standard_message,flow_config=flow_config)
     
-    dict_data = asdict(script_param)
-    param = any_to_str_dict_first_level(json.dumps(dict_data,default=str))
-
     # 日志记录参数传递
     logs_tool.log_business_info("script_exe_base","脚本执行参数记录",param)
 
