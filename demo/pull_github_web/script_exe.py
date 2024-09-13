@@ -19,10 +19,28 @@ def openPage(browser: Browser,message:dict) -> Page:
     return page
 
 def search_playwright(page: Page,message:dict) -> None:
-    pass
+    page.locator("qbsearch-input").click()
+    # 等待页面加载
+    page.wait_for_load_state(state="networkidle")
+    page.locator("//*[@id='query-builder-test']").fill(message.get("search_key"))
+    # 等待页面加载
+    page.wait_for_load_state(state="networkidle")
+    page.locator("//*[@id='query-builder-test']").press("Enter")
+    # 等待页面加载
+    page.wait_for_load_state(state="networkidle")
+    page.get_by_role("link", name="microsoft/playwright",exact=True).click()
+    # 等待页面加载
+    page.wait_for_load_state(state="networkidle")
 
 def login(page: Page,message:dict,config:dict) -> None:
-    pass
+    page.goto(message.get("login_url"), timeout=50000)
+    # 等待页面加载
+    page.wait_for_load_state(state="networkidle")
+    page.locator("//*[@id='login_field']").fill(config.get("account"))
+    page.locator("//*[@id='password']").fill(config.get("password"))
+    page.wait_for_timeout(2000)
+    page.get_by_role("input",name="commit").click()
+    page.wait_for_timeout(2000)
 
 
 def main():
