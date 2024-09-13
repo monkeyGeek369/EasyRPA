@@ -2,15 +2,13 @@
 from easyrpa.models.base.request_header import RequestHeader
 from easyrpa.tools import debug_tools
 header = RequestHeader(user_id=1,trace_id="123",req_time=None)
-message = '''{"home_url":"https://github.com","login_url":"https://github.com/login","search_key":"playwright"}'''
-config = '''{"account":"123","password":"456"}'''
-debug_tools.env_params_build_and_set(header=header,sub_source=1,flow_standard_message=message,flow_config=config)
+message = '''{"home_url":"https://github.com","login_url":"https://github.com/login","search_key":"playwright","account":"123","password":"456"}'''
+debug_tools.env_params_build_and_set(header=header,sub_source=1,flow_standard_message=message,flow_config=None)
 # end：调试时开启，正常执行时注释掉-----------------------------------------------------------------------------------------
 from playwright.sync_api import sync_playwright
 from playwright.sync_api import Browser
 from playwright.sync_api import Page
 import os
-import ast
 import json
 
 def openPage(browser: Browser,message:dict) -> Page:
@@ -25,23 +23,32 @@ def search_playwright(page: Page,message:dict) -> None:
     page.locator("//*[@id='query-builder-test']").fill(message.get("search_key"))
     # 等待页面加载
     page.wait_for_load_state(state="networkidle")
+    page.wait_for_timeout(2000)
     page.locator("//*[@id='query-builder-test']").press("Enter")
     # 等待页面加载
     page.wait_for_load_state(state="networkidle")
     page.get_by_role("link", name="microsoft/playwright",exact=True).click()
     # 等待页面加载
     page.wait_for_load_state(state="networkidle")
+    # 异常页面处理
+    # todo
 
-def login(page: Page,message:dict,config:dict) -> None:
+
+def login(page: Page,message:dict) -> str:
     page.goto(message.get("login_url"), timeout=50000)
     # 等待页面加载
     page.wait_for_load_state(state="networkidle")
-    page.locator("//*[@id='login_field']").fill(config.get("account"))
-    page.locator("//*[@id='password']").fill(config.get("password"))
+    page.locator("//*[@id='login_field']").fill(message.get("account"))
+    page.locator("//*[@id='password']").fill(message.get("password"))
     page.wait_for_timeout(2000)
-    page.get_by_role("input",name="commit").click()
+    page.get_by_role("button",name="Sign in",exact=True).click()
     page.wait_for_timeout(2000)
-
+    # 获取错误提示信息
+    is_error = page.locator("#js-flash-container").is_visible()
+    if is_error:
+        return "login_error"
+    else:
+        return "login_success"
 
 def main():
     # 创建PlaywrightContextManager的实例
@@ -52,17 +59,17 @@ def main():
     pw = manager.start()
     try:
         # 将json字符串转换为dict取值
-        header = ast.literal_eval(os.environ.get("header"))
         standart = json.loads(os.environ.get("standard"),object_hook=dict)
-        config = json.loads(os.environ.get("flow_config"),object_hook=dict)
 
         browser = pw.chromium.launch(headless=False,channel='chrome')
-        # 登录
+        # 打开页面
         page = openPage(browser=browser,message=standart)
         # 搜索playwright
         search_playwright(page=page,message=standart)
-        # 填写vgm信息
-        login(page=page,message=standart,config=config)
+        # 登录
+        result = login(page=page,message=standart)
+
+        print(result)
         
     except Exception as e:
         # 处理任何异常
