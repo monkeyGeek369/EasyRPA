@@ -1,5 +1,6 @@
 from database.models import Flow
 from database.db_session import db_session,update_common_fields,create_common_fields
+from easyrpa.tools import str_tools,number_tool
 
 class FlowDbManager:
     @db_session
@@ -25,7 +26,7 @@ class FlowDbManager:
         if not flow or not flow.id:
             raise ValueError("Flow ID cannot be empty")
 
-        existing_flow = FlowDbManager.get_flow_by_id(session, flow_id=flow.id)
+        existing_flow = session.query(Flow).filter(Flow.id == flow.id).first()
         if existing_flow:
             if flow.flow_code and existing_flow.flow_code != flow.flow_code:
                 # Check if flow_code is unique
@@ -33,40 +34,40 @@ class FlowDbManager:
                     raise ValueError("Flow code already exists")
                 existing_flow.flow_code = flow.flow_code
 
-            if not flow.flow_name and existing_flow.flow_name != flow.flow_name:
+            if str_tools.str_is_not_empty(flow.flow_name) and existing_flow.flow_name != flow.flow_name:
                 existing_flow.flow_name = flow.flow_name
 
-            if not flow.site_id and existing_flow.site_id != flow.site_id:
+            if number_tool.num_is_not_empty(flow.site_id) and existing_flow.site_id != flow.site_id:
                 existing_flow.site_id = flow.site_id
                 
-            if not flow.flow_rpa_type and existing_flow.flow_rpa_type != flow.flow_rpa_type:
+            if number_tool.num_is_not_empty(flow.flow_rpa_type) and existing_flow.flow_rpa_type != flow.flow_rpa_type:
                 existing_flow.flow_rpa_type = flow.flow_rpa_type
 
-            if not flow.flow_exe_env and existing_flow.flow_exe_env != flow.flow_exe_env:
+            if number_tool.num_is_not_empty(flow.flow_exe_env) and existing_flow.flow_exe_env != flow.flow_exe_env:
                 existing_flow.flow_exe_env = flow.flow_exe_env
 
-            if not flow.flow_biz_type and existing_flow.flow_biz_type != flow.flow_biz_type:
+            if number_tool.num_is_not_empty(flow.flow_biz_type) and existing_flow.flow_biz_type != flow.flow_biz_type:
                 existing_flow.flow_biz_type = flow.flow_biz_type
                 
-            if not flow.max_retry_number and existing_flow.max_retry_number != flow.max_retry_number:
+            if number_tool.num_is_not_empty(flow.max_retry_number) and existing_flow.max_retry_number != flow.max_retry_number:
                 existing_flow.max_retry_number = flow.max_retry_number
             
-            if not flow.max_exe_time and existing_flow.max_exe_time != flow.max_exe_time:
+            if number_tool.num_is_not_empty(flow.max_exe_time) and existing_flow.max_exe_time != flow.max_exe_time:
                 existing_flow.max_exe_time = flow.max_exe_time
 
-            if not flow.retry_code and existing_flow.retry_code != flow.retry_code:
+            if str_tools.str_is_not_empty(flow.retry_code) and existing_flow.retry_code != flow.retry_code:
                 existing_flow.retry_code = flow.retry_code
 
-            if not flow.request_check_script and existing_flow.request_check_script != flow.request_check_script:
+            if str_tools.str_is_not_empty(flow.request_check_script) and existing_flow.request_check_script != flow.request_check_script:
                 existing_flow.request_check_script = flow.request_check_script
                 
-            if not flow.request_adapt_script and existing_flow.request_adapt_script != flow.request_adapt_script:
+            if str_tools.str_is_not_empty(flow.request_adapt_script) and existing_flow.request_adapt_script != flow.request_adapt_script:
                 existing_flow.request_adapt_script = flow.request_adapt_script
                 
-            if not flow.flow_exe_script and existing_flow.flow_exe_script != flow.flow_exe_script:
+            if str_tools.str_is_not_empty(flow.flow_exe_script) and existing_flow.flow_exe_script != flow.flow_exe_script:
                 existing_flow.flow_exe_script = flow.flow_exe_script
                 
-            if not flow.flow_result_handle_script and existing_flow.flow_result_handle_script != flow.flow_result_handle_script:
+            if str_tools.str_is_not_empty(flow.flow_result_handle_script) and existing_flow.flow_result_handle_script != flow.flow_result_handle_script:
                 existing_flow.flow_result_handle_script = flow.flow_result_handle_script
 
             update_common_fields(existing_flow)

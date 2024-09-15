@@ -11,3 +11,12 @@ class TestFlowTask(unittest.TestCase):
                                                        ,sub_source=1
                                                        ,request_standard_message=message)
         flow_task_subscribe(flow_task_subscribe_dto)
+
+    def test_demo_pull_github_web_task(self):
+        message = '''{"home_url":"https://github.com","login_url":"https://github.com/login","search_key":"playwright"}'''
+        flow_task_subscribe_dto = FlowTaskSubscribeDTO(flow_id=3
+                                                       ,flow_configuration_id=2
+                                                       ,biz_no="123"
+                                                       ,sub_source=1
+                                                       ,request_standard_message=message)
+        flow_task_subscribe(flow_task_subscribe_dto)

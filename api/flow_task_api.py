@@ -22,13 +22,13 @@ flow_task_bp =  Blueprint('flow_task',__name__)
 @easyrpa_request_wrapper
 def flow_task_result_handler() -> bool:
     if not request:
-        raise EasyRpaException("request is empty",EasyRpaExceptionCodeEnum.DATA_NULL.code,None)
+        raise EasyRpaException("request is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None)
 
     # 获取请求对象
     req_json = request.get_json()
 
     if not req_json:
-        raise EasyRpaException("request json is empty",EasyRpaExceptionCodeEnum.DATA_NULL.code,None)
+        raise EasyRpaException("request json is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None)
     
     # 模型转换
     dto = request_json_to_FlowTaskExeResDTO(req_json)
@@ -39,21 +39,21 @@ def flow_task_result_handler() -> bool:
     # 查询流程任务
     flow_task = FlowTaskDBManager.get_flow_task_by_id(dto.task_id)
     if not flow_task:
-        raise EasyRpaException("""flow task {} not found""".format(dto.task_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
+        raise EasyRpaException("""flow task {} not found""".format(dto.task_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
 
     # 查询流程
     flow = FlowDbManager.get_flow_by_id(dto.flow_id)
     if not flow:
-        raise EasyRpaException("""flow {} not found""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
+        raise EasyRpaException("""flow {} not found""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
     if not flow.request_check_script:
-        raise EasyRpaException("""flow {} not found check script""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
+        raise EasyRpaException("""flow {} not found check script""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
     if not flow.request_adapt_script:
-        raise EasyRpaException("""flow {} not found adapt script""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
+        raise EasyRpaException("""flow {} not found adapt script""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
 
     # 查询流程配置
     flow_configuration = FlowConfigurationDBManager.get_flow_configuration_by_id(dto.flow_configuration_id)
     if not flow_configuration:
-        raise EasyRpaException("""flow configuration {} not found""".format(dto.flow_configuration_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.code,None,dto)
+        raise EasyRpaException("""flow configuration {} not found""".format(dto.flow_configuration_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
 
     # 获取rpa执行结果
     exe_result = ScriptExeResult(status=dto.status,print_str=dto.print_str, result=dto.result, error_msg=dto.error_msg)

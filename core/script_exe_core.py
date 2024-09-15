@@ -31,10 +31,10 @@ def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
     script_result = script_exe_base(flow_exe_env,flow_standard_message,flow_exe_script,sub_source,flow_config)
 
     # 执行结果处理
-    if not script_result:
-        raise EasyRpaException("script result is null",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.code,None,flow_standard_message)
-    if not script_result.status:
-        raise EasyRpaException("script result status is error:" + script_result.error_msg,EasyRpaExceptionCodeEnum.EXECUTE_ERROR.code,None,script_result.print_str)
+    if script_result is None:
+        raise EasyRpaException("script result is null",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,flow_standard_message)
+    if script_result.status is None or not script_result.status:
+        raise EasyRpaException("script result status is error:" + script_result.error_msg,EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,script_result.print_str)
 
     return True
 
@@ -61,11 +61,11 @@ def request_adapter_script_exe(flow_exe_env:str,flow_standard_message:str
 
     # 执行结果处理
     if not script_result:
-        raise EasyRpaException("script result is null",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.code,None,flow_standard_message)
+        raise EasyRpaException("script result is null",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,flow_standard_message)
     if not script_result.status:
-        raise EasyRpaException("script result status is error:" + script_result.error_msg,EasyRpaExceptionCodeEnum.EXECUTE_ERROR.code,None,script_result.print_str)
+        raise EasyRpaException("script result status is error:" + script_result.error_msg,EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,script_result.print_str)
     if not script_result.result:
-        raise EasyRpaException("script result result is null",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.code,None,script_result.print_str)
+        raise EasyRpaException("script result result is null",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,script_result.print_str)
     
     # 执行结果转dict
     dict_result = str_to_str_dict(script_result.result)
@@ -91,7 +91,7 @@ def rpa_result_script_exe(flow_exe_env:str,rpa_result_message:str
 
     # 执行结果处理
     if str_tools.str_is_empty(script_result.result):
-        raise EasyRpaException("response script result result is null",EasyRpaExceptionCodeEnum.DATA_NULL.code,None,script_result)
+        raise EasyRpaException("response script result result is null",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,script_result)
     
     result_dict = json.loads(script_result.result,object_hook=any_to_str_dict_first_level)
 
