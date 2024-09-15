@@ -8,7 +8,8 @@ from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from easyrpa.models.scripty_exe_result import ScriptExeResult
 from dataclasses import asdict
 import easyrpa.tools.debug_tools as my_debug
-from easyrpa.tools import logs_tool
+from easyrpa.tools import logs_tool,str_tools
+import json
 
 def request_check_script_exe(flow_exe_env:str,flow_standard_message:str
                              ,flow_exe_script:str,sub_source:int,flow_config:str) -> bool:
@@ -87,7 +88,20 @@ def rpa_result_script_exe(flow_exe_env:str,rpa_result_message:str
     
     # 执行脚本
     script_result = script_exe_base(flow_exe_env,rpa_result_message,flow_exe_script,sub_source,flow_config)
-    return script_result
+
+    # 执行结果处理
+    if str_tools.str_is_empty(script_result.result):
+        raise EasyRpaException("response script result result is null",EasyRpaExceptionCodeEnum.DATA_NULL.code,None,script_result)
+    
+    result_dict = json.loads(script_result.result,object_hook=any_to_str_dict_first_level)
+
+    result = ScriptExeResult(status=result_dict.get("status")
+                             ,error_msg=result_dict.get("error_msg")
+                             ,print_str=result_dict.get("print_str")
+                             ,result=result_dict.get("result")
+                             ,code = result_dict.get("code"))
+
+    return result
 
 def script_exe_base(flow_exe_env:str,flow_standard_message:str
                              ,flow_exe_script:str,sub_source:int
