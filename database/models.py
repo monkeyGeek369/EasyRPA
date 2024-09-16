@@ -95,6 +95,7 @@ class FlowTask(Base):
     id = Column(BigInteger, primary_key=True, unique=True, comment='流程任务主键')
     site_id = Column(BigInteger, nullable=False, comment='站点id')
     flow_id = Column(BigInteger, nullable=False, comment='流程id')
+    flow_config_id = Column(BigInteger, nullable=False, comment='流程配置id')
     biz_no = Column(String(255), comment='业务编号')
     sub_source = Column(Integer, nullable=False, comment='订阅来源（1调度计划）')
     status = Column(Integer, nullable=False, comment='任务状态（1待执行2执行中3成功4失败）')

@@ -114,6 +114,7 @@ dict_params = {
     "password":config.get("password")
 }
 
+# 必须保证key/value由双引号包裹，否则后续取值是问题
 print(json.dumps(dict_params))
 """
         flow_exe_script = """
@@ -170,10 +171,15 @@ def main():
     # 手动调用start方法
     pw = manager.start()
     try:
+        print(111)
         # 将json字符串转换为dict取值
-        standart = json.loads(os.environ.get("standard"),object_hook=dict)
+        print(os.environ.get('standard'))
+        standart = json.loads(os.environ.get('standard'),object_hook=dict)
 
+        print(222)
         browser = pw.chromium.launch(headless=False,channel='chrome')
+        
+        print(333)
         # 打开页面
         page = openPage(browser=browser,message=standart)
         # 搜索playwright
@@ -195,13 +201,12 @@ if __name__ =='__main__':
     main()
 """
         flow_result_handle_script = """
-
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from easyrpa.enums.rpa_exe_result_code_enum import RpaExeResultCodeEnum
 from easyrpa.models.scripty_exe_result import ScriptExeResult
 import os
-import json
+import json,jsonpickle
 
 # 将json字符串转换为dict取值
 standart = json.loads(os.environ.get("standard"),object_hook=dict)
@@ -223,7 +228,7 @@ else:
 
 result = ScriptExeResult(status=status,error_msg=error_msg,print_str=None,result=data,code = code)
 
-print(json.dumps(result))
+print(jsonpickle.encode(result))
 """
 
         FlowDbManager.update_flow(Flow(id=3

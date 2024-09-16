@@ -25,4 +25,5 @@ dict_params = {
     "password":config.get("password")
 }
 
+# 必须保证key/value由双引号包裹，否则后续取值是问题
 print(json.dumps(dict_params))

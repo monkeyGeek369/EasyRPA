@@ -58,10 +58,15 @@ def main():
     # 手动调用start方法
     pw = manager.start()
     try:
+        print(111)
         # 将json字符串转换为dict取值
-        standart = json.loads(os.environ.get("standard"),object_hook=dict)
+        print(os.environ.get('standard'))
+        standart = json.loads(os.environ.get('standard'),object_hook=dict)
 
+        print(222)
         browser = pw.chromium.launch(headless=False,channel='chrome')
+        
+        print(333)
         # 打开页面
         page = openPage(browser=browser,message=standart)
         # 搜索playwright

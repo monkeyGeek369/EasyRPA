@@ -3,6 +3,7 @@ from database.models import FlowTask
 from database.flow_task_log_db_manager import FlowTaskLogDBManager
 from database.models import FlowTaskLog
 from easyrpa.enums.log_type_enum import LogTypeEnum
+from easyrpa.tools import str_tools,number_tool
 
 
 class FlowTaskDBManager:
@@ -18,31 +19,31 @@ class FlowTaskDBManager:
     @db_session
     def create_flow_task(session, flow_task: FlowTask):
         # site_id不可以为空
-        if not flow_task.site_id:
+        if number_tool.num_is_empty(flow_task.site_id):
             raise ValueError("Site ID cannot be empty")
         
         # flow_id不可以为空
-        if not flow_task.flow_id:
+        if number_tool.num_is_empty(flow_task.flow_id):
             raise ValueError("Flow ID cannot be empty")
         
         # biz_no不可以为空
-        if not flow_task.biz_no:
+        if str_tools.str_is_empty(flow_task.biz_no):
             raise ValueError("Biz No cannot be empty")
         
         # sub_source不可以为空
-        if not flow_task.sub_source:
+        if number_tool.num_is_empty(flow_task.sub_source):
             raise ValueError("Sub Source cannot be empty")
         
         # status不可以为空
-        if not flow_task.status:
+        if flow_task.status is None:
             raise ValueError("Status cannot be empty")
         
         # request_standard_message不可以为空
-        if not flow_task.request_standard_message:
+        if str_tools.str_is_empty(flow_task.request_standard_message):
             raise ValueError("Request Standard Message cannot be empty")
         
         # flow_standard_message不可以为空
-        if not flow_task.flow_standard_message:
+        if str_tools.str_is_empty(flow_task.flow_standard_message):
             raise ValueError("Flow Standard Message cannot be empty")
 
         create_common_fields(flow_task)
@@ -73,6 +74,10 @@ class FlowTaskDBManager:
             # flow_id不为空则可以更新
             if data.flow_id:
                 flow_task.flow_id = data.flow_id
+
+            # flow_config_id不为空则更新
+            if data.flow_config_id:
+                flow_task.flow_config_id = data.flow_config_id
 
             # biz_no不为空则可以更新
             if data.biz_no:

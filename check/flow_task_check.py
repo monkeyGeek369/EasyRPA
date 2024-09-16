@@ -5,7 +5,7 @@ from easyrpa.tools import number_tool
 from easyrpa.tools import str_tools
 
 def flow_task_exe_res_dto_check(dto:FlowTaskExeResDTO):
-    if not dto:
+    if dto is None:
         raise EasyRpaException("flow task exe result obj is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
     if number_tool.num_is_empty(dto.task_id):
         raise EasyRpaException("task id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)

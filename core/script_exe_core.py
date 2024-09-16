@@ -89,11 +89,12 @@ def rpa_result_script_exe(flow_exe_env:str,rpa_result_message:str
     # 执行脚本
     script_result = script_exe_base(flow_exe_env,rpa_result_message,flow_exe_script,sub_source,flow_config)
 
-    # 执行结果处理
+    # 执行结果异常
     if str_tools.str_is_empty(script_result.result):
-        raise EasyRpaException("response script result result is null",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,script_result)
+        return script_result
     
-    result_dict = json.loads(script_result.result,object_hook=any_to_str_dict_first_level)
+    # 执行结果正常
+    result_dict = json.loads(script_result.result)
 
     result = ScriptExeResult(status=result_dict.get("status")
                              ,error_msg=result_dict.get("error_msg")
