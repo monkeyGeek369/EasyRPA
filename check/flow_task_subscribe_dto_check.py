@@ -4,8 +4,6 @@ from easyrpa.tools import str_tools,number_tool
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 
 def flow_task_subscribe_dto_check(dto:FlowTaskSubscribeDTO)->bool:
-    if not dto:
-        raise EasyRpaException("flow task subscribe obj is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
     if number_tool.num_is_empty(dto.flow_id):
         raise EasyRpaException("flow id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
     if number_tool.num_is_empty(dto.flow_configuration_id):

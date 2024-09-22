@@ -8,7 +8,7 @@ from easyrpa.enums.log_type_enum import LogTypeEnum
 from easyrpa.tools import request_tool
 
 
-def flow_task_dispatch(flow:Flow,flow_task:FlowTask):
+def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str):
      # 获取可用机器人-todo：先简单实现
      url = "http://127.0.0.1:5006/flow/task/async/exe"
 
@@ -20,7 +20,7 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask):
                                                   ,flow_code=flow.flow_code
                                                   ,flow_name=flow.flow_name
                                                   ,flow_rpa_type=flow.flow_rpa_type
-                                                  ,flow_exe_env="playwright"
+                                                  ,flow_exe_env=flow_exe_env
                                                   ,flow_standard_message=flow_task.flow_standard_message
                                                   ,flow_exe_script=flow.flow_exe_script
                                                   ,sub_source=flow_task.sub_source)

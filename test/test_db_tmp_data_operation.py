@@ -1,8 +1,10 @@
 import unittest
 from database.site_db_manager import SiteDbManager
 from database.flow_db_manager import FlowDbManager
-from database.models import Flow,FlowConfiguration
+from database.models import Flow,FlowConfiguration,MetaData,MetaDataItem
 from database.flow_configuration_db_manager import FlowConfigurationDBManager
+from database.meta_data_db_manager import MetaDataDbManager
+from database.meta_data_item_db_manager import MetaDataItemDbManager
 
 
 class TestDbTmpDataOperation(unittest.TestCase):
@@ -49,6 +51,16 @@ print("789")
         json_str = '''{"config_key1":123,"config_key2":"ckv2","config_key3":{"ck1":"cv1","ck2":234,"ck3":[1,2,3],"ck4":{"cck1":111},"ck5":[{"cck51":555,"cck52":"52"}]},"config_key4":[{"ck41":444,"ck42":"456"}]}'''
         flow_configuration = FlowConfiguration(flow_id=1,config_name="name",config_description="description",config_json=json_str)
         FlowConfigurationDBManager.create_flow_configuration(flow_configuration)
+
+    def test_create_metadata(self):
+        meta = MetaData(name="流程执行环境",code="flow_exe_env",description="flow execute environment metadata")
+        MetaDataDbManager.create_meta_data(meta=meta)
+
+    def test_create_metadata_item(self):
+        meta_item_pl = MetaDataItem(meta_id=1,business_code="1",name_en="playwright",name_cn="无")
+        meta_item_yt = MetaDataItem(meta_id=1,business_code="2",name_en="ytdlp",name_cn="无")
+        MetaDataItemDbManager.create_meta_data_item(item=meta_item_pl)
+        MetaDataItemDbManager.create_meta_data_item(item=meta_item_yt)
 
 class TestDemoPullGithubWeb(unittest.TestCase):
     def test_create_site(self):

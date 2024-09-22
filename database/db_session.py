@@ -4,7 +4,6 @@ from sqlalchemy.orm import sessionmaker
 from functools import wraps
 from sqlalchemy.exc import SQLAlchemyError
 from easyrpa.tools.logs_tool import log_db_error
-from sqlalchemy import orm
 from easyrpa.tools import request_tool 
 from datetime import datetime
 

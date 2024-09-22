@@ -14,6 +14,7 @@ from database.models import FlowTask,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_res_dto import FlowTaskExeResDTO
 from easyrpa.tools import str_tools
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
+from core.flow_manager_core import get_flow_exe_env_meta_data
 
 flow_task_bp =  Blueprint('flow_task',__name__)
 
@@ -49,9 +50,12 @@ def flow_task_result_handler(dto:FlowTaskExeResDTO) -> bool:
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id= flow_task.id
                                                             ,log_type=LogTypeEnum.TASK_RESULT.value[1]
                                                             ,message="""rpa result: {}""".format(rpa_result_message)))
+        
+        # 获取执行环境
+        meta_data_item = get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
 
         # 执行返回值脚本
-        dict_response_result = rpa_result_script_exe(flow_exe_env="playwright"
+        dict_response_result = rpa_result_script_exe(flow_exe_env=meta_data_item.name_en
                                                     ,rpa_result_message=rpa_result_message
                                                     ,flow_exe_script=flow.flow_result_handle_script
                                                     ,sub_source=dto.sub_source

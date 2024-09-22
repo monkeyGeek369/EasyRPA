@@ -181,3 +181,38 @@ class Site(Base):
     modify_time = Column(DateTime, comment='修改日期')
     trace_id = Column(String(255), comment='跟踪链路id')
     is_active = Column(BIT(1), nullable=False, comment='是否启用')
+
+
+class MetaData(Base):
+    __tablename__ = 'meta_data'
+    __table_args__ = {'comment': '元数据'}
+
+    id = Column(BigInteger, primary_key=True, unique=True, comment='主键id')
+    name = Column(String(255), nullable=False, comment='元数据名称')
+    code = Column(String(255), nullable=False, comment='元数据code')
+    description = Column(String(255), nullable=False, comment='元数据描述')
+    created_id = Column(BigInteger, nullable=False, comment='创建人')
+    created_time = Column(DateTime, nullable=False, comment='创建日期')
+    modify_id = Column(BigInteger, comment='修改人')
+    modify_time = Column(DateTime, comment='修改日期')
+    trace_id = Column(String(255), comment='跟踪链路id')
+    is_active = Column(BIT(1), nullable=False, comment='是否启用')
+
+
+class MetaDataItem(Base):
+    __tablename__ = 'meta_data_item'
+    __table_args__ = {'comment': '元数据项'}
+
+    id = Column(BigInteger, primary_key=True, unique=True, comment='主键id')
+    meta_id = Column(BigInteger, nullable=False, comment='元数据id')
+    business_code = Column(String(255), nullable=False, comment='业务code标识')
+    name_en = Column(String(255), nullable=False, comment='英文名称')
+    name_cn = Column(String(255), nullable=False, comment='中文名称')
+    created_id = Column(BigInteger, nullable=False, comment='创建人')
+    created_time = Column(DateTime, nullable=False, comment='创建日期')
+    modify_id = Column(BigInteger, comment='修改人')
+    modify_time = Column(DateTime, comment='修改日期')
+    trace_id = Column(String(255), comment='跟踪链路id')
+    is_active = Column(BIT(1), nullable=False, comment='是否启用')
+
+
