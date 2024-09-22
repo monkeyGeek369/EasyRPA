@@ -26,7 +26,11 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str):
                                                   ,sub_source=flow_task.sub_source)
         
         # 将任务执行请求以post方式发送到机器人
-        response = requests.post(url, json=request_tool.request_base_model_json_builder(flow_task_exe_req_dto))
+        req_json = request_tool.request_base_model_json_builder(flow_task_exe_req_dto)
+        response = requests.post(url, json=req_json)
+        
+        # 请求数据记录
+        FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"adapt script message:{req_json}。"))
 
         # 调度结果处理
         if response.status_code == 200:

@@ -9,12 +9,13 @@ from database.flow_task_db_manager import FlowTaskDBManager
 from database.flow_task_db_manager import FlowTaskLogDBManager
 from easyrpa.models.scripty_exe_result import ScriptExeResult
 from easyrpa.enums.log_type_enum import LogTypeEnum
-import jsonpickle
+import jsonpickle,json
 from database.models import FlowTask,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_res_dto import FlowTaskExeResDTO
 from easyrpa.tools import str_tools
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 from core.flow_manager_core import get_flow_exe_env_meta_data
+from dataclasses import asdict
 
 flow_task_bp =  Blueprint('flow_task',__name__)
 
@@ -43,7 +44,7 @@ def flow_task_result_handler(dto:FlowTaskExeResDTO) -> bool:
                                     ,result=dto.result
                                     ,error_msg=dto.error_msg
                                     ,code=dto.code)
-        rpa_result_message = jsonpickle.encode(exe_result)
+        rpa_result_message = json.dumps(asdict(exe_result),ensure_ascii=False)
 
         # 更新任务+记录日志
         FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id,task_result_message=rpa_result_message))
@@ -60,7 +61,7 @@ def flow_task_result_handler(dto:FlowTaskExeResDTO) -> bool:
                                                     ,flow_exe_script=flow.flow_result_handle_script
                                                     ,sub_source=dto.sub_source
                                                     ,flow_config=None)
-        dict_response_result_json = jsonpickle.encode(dict_response_result)
+        dict_response_result_json = json.dumps(asdict(dict_response_result),ensure_ascii=False)
         
         # 更新任务+记录日志
         result_status = FlowTaskStatusEnum.SUCCESS.value[1] if dict_response_result.status else FlowTaskStatusEnum.FAIL.value[1]

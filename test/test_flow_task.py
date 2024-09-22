@@ -20,3 +20,12 @@ class TestFlowTask(unittest.TestCase):
                                                        ,sub_source=1
                                                        ,request_standard_message=message)
         flow_task_subscribe(flow_task_subscribe_dto)
+
+    def test_pull_youtube_web_task(self):
+        message = '''{}'''
+        flow_task_subscribe_dto = FlowTaskSubscribeDTO(flow_id=1
+                                                       ,flow_configuration_id=1
+                                                       ,biz_no="123456"
+                                                       ,sub_source=1
+                                                       ,request_standard_message=message)
+        flow_task_subscribe(flow_task_subscribe_dto)

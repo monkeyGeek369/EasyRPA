@@ -9,4 +9,4 @@ class AppConfigManager:
         return app
     
     def get_flow_exe_env_meta_code(self) -> str:
-        self.get_app_config()['flow_exe_env_meta_code']
+        return self.get_app_config()['flow_exe_env_meta_code']

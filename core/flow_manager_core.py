@@ -67,8 +67,8 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
 def get_flow_exe_env_meta_data(flow_exe_env:int) -> MetaDataItem:
     if number_tool.num_is_empty(flow_exe_env):
         raise EasyRpaException("""flow exe env is null""".format(flow_exe_env),EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,None)
-
-    code = AppConfigManager.get_flow_exe_env_meta_code()
+    app = AppConfigManager()
+    code = app.get_flow_exe_env_meta_code()
     meta_data = MetaDataDbManager.get_meta_data_by_code(code=code)
     if meta_data is None:
         raise EasyRpaException("""flow exe env meta data {} not found,please config meta data""".format(code),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,flow_exe_env)
