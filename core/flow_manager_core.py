@@ -11,7 +11,7 @@ from core.script_exe_core import *
 from database.flow_task_db_manager import FlowTaskDBManager
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 import json
-from core.task_dispatch import flow_task_dispatch
+from core.task_dispatch_core import flow_task_dispatch
 from configuration.app_config_manager import AppConfigManager
 from database.meta_data_db_manager import MetaDataDbManager
 from database.meta_data_item_db_manager import MetaDataItemDbManager
