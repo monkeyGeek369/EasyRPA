@@ -16,6 +16,8 @@ from easyrpa.tools import str_tools
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 from core.flow_manager_core import get_flow_exe_env_meta_data
 from dataclasses import asdict
+from core.flow_task_exe_result_notify_core import flow_task_exe_result_notify
+from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
 
 flow_task_bp =  Blueprint('flow_task',__name__)
 
@@ -75,7 +77,23 @@ def flow_task_result_handler(dto:FlowTaskExeResDTO) -> bool:
                                                             ,log_type=LogTypeEnum.TASK_RESULT.value[1]
                                                             ,message="""rpa script result: {}""".format(dict_response_result_json)))
 
-        # 执行结果来源推送 todo
+        # 执行结果来源推送
+        notify = FlowTaskExeResultNotifyDTO(
+            site_id=flow_task.site_id
+            ,flow_id=flow_task.flow_id
+            ,flow_task_id=flow_task.id
+            ,flow_config_id=flow_task.flow_config_id
+            ,biz_no=flow_task.biz_no
+            ,sub_source=flow_task.sub_source
+            ,status=result_status
+            ,result_code=dict_response_result.code
+            ,result_message=dict_response_result.error_msg
+            ,result_data=dict_response_result.result
+            ,screenshot_base64=None
+            ,created_id=flow_task.created_id
+            ,created_time=flow_task.created_time
+        )
+        flow_task_exe_result_notify(notify)
 
         # api返回
         return True

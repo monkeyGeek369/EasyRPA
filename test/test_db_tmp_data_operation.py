@@ -53,14 +53,22 @@ print("789")
         FlowConfigurationDBManager.create_flow_configuration(flow_configuration)
 
     def test_create_metadata(self):
-        meta = MetaData(name="流程执行环境",code="flow_exe_env",description="flow execute environment metadata")
+        #meta = MetaData(name="流程执行环境",code="flow_exe_env",description="flow execute environment metadata")
+        #MetaDataDbManager.create_meta_data(meta=meta)
+
+        meta = MetaData(name="流程任务订阅来源",code="sub_source",description="flow task subscription source metadata")
         MetaDataDbManager.create_meta_data(meta=meta)
 
     def test_create_metadata_item(self):
-        meta_item_pl = MetaDataItem(meta_id=1,business_code="1",name_en="playwright",name_cn="无")
-        meta_item_yt = MetaDataItem(meta_id=1,business_code="2",name_en="ytdlp",name_cn="无")
-        MetaDataItemDbManager.create_meta_data_item(item=meta_item_pl)
-        MetaDataItemDbManager.create_meta_data_item(item=meta_item_yt)
+        # 执行环境元数据
+        #meta_item_pl = MetaDataItem(meta_id=1,business_code="1",name_en="playwright",name_cn="无")
+        #meta_item_yt = MetaDataItem(meta_id=1,business_code="2",name_en="ytdlp",name_cn="无")
+        #MetaDataItemDbManager.create_meta_data_item(item=meta_item_pl)
+        #MetaDataItemDbManager.create_meta_data_item(item=meta_item_yt)
+
+        # 任务订阅来源元数据
+        meta_item_job = MetaDataItem(meta_id=2,business_code="1",name_en="easyrpa_job_dispatch",name_cn="easyrpa inner job dispatch")
+        MetaDataItemDbManager.create_meta_data_item(item=meta_item_job)
 
 class TestDemoPullGithubWeb(unittest.TestCase):
     def test_create_site(self):
