@@ -1,5 +1,6 @@
 from database.db_session import db_session,update_common_fields,create_common_fields
 from database.models import DispatchData
+from easyrpa.tools import str_tools,number_tool
 
 
 class DispatchDatumDBManager:
@@ -15,17 +16,13 @@ class DispatchDatumDBManager:
     @db_session
     def create_dispatch_data(session, dispatch_data:DispatchData):
         # job_id不可以为空
-        if not dispatch_data.job_id:
+        if number_tool.num_is_empty(dispatch_data.job_id):
             raise ValueError("Job ID cannot be empty")
         
         # data_json不可以为空
-        if not dispatch_data.data_json:
+        if str_tools.str_is_empty(dispatch_data.data_json):
             raise ValueError("Data JSON cannot be empty")
         
-        # is_data_push不可以为空
-        if not dispatch_data.is_data_push:
-            raise ValueError("Is data push cannot be empty")
-
         create_common_fields(dispatch_data)
         session.add(dispatch_data)
         session.commit()
@@ -33,20 +30,24 @@ class DispatchDatumDBManager:
 
     @db_session
     def update_dispatch_data(session, data:DispatchData):
+        if number_tool.num_is_empty(data.id):
+            raise ValueError("Dispatch Data ID cannot be empty")
+
         dispatch_data = session.query(DispatchData).filter(DispatchData.id == data.id).first()
+
         if dispatch_data:
             # job_id不为空则可更新
-            if data.job_id:
+            if number_tool.num_is_not_empty(data.job_id):
                 dispatch_data.job_id = data.job_id
 
+            # data_business_no不为空则可更新
+            if str_tools.str_is_not_empty(data.data_business_no):
+                dispatch_data.data_business_no = data.data_business_no
+
             # data_json不为空则可更新
-            if data.data_json:
+            if str_tools.str_is_not_empty(data.data_json):
                 dispatch_data.data_json = data.data_json
 
-            # is_data_push不为空则可更新
-            if data.is_data_push:
-                dispatch_data.is_data_push = data.is_data_push
-            
             update_common_fields(dispatch_data)
             session.commit()
             return dispatch_data

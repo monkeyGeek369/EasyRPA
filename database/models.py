@@ -16,15 +16,14 @@ class DispatchData(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True, comment='调度数据主键')
     job_id = Column(BigInteger, nullable=False, comment='所属jobid')
-    data_json = Column(LONGTEXT, comment='数据json')
-    is_data_push = Column(BIT(1), comment='数据是否推送')
+    data_business_no = Column(String(255), comment='数据业务编号（用于标记数据唯一性）')
+    data_json = Column(LONGTEXT, nullable=False, comment='数据json')
     created_id = Column(BigInteger, nullable=False, comment='创建人')
     created_time = Column(DateTime, nullable=False, comment='创建日期')
     modify_id = Column(BigInteger, comment='修改人')
     modify_time = Column(DateTime, comment='修改日期')
     trace_id = Column(String(255), comment='跟踪链路id')
     is_active = Column(BIT(1), nullable=False, comment='是否启用')
-
 
 class DispatchJob(Base):
     __tablename__ = 'dispatch_job'
@@ -34,9 +33,11 @@ class DispatchJob(Base):
     job_name = Column(String(255), nullable=False, comment='计划名称')
     cron = Column(String(255), nullable=False, comment='调度规则')
     flow_code = Column(String(255), nullable=False, comment='流程code')
-    flow_config = Column(BigInteger, comment='流程配置id')
+    flow_config_id = Column(BigInteger, comment='流程配置id')
     job_type = Column(Integer, nullable=False, comment='job类型（1数据爬取，2数据推送）')
     parent_job = Column(BigInteger, comment='父jobid')
+    current_data_id = Column(BigInteger, comment='当前处理data表主键id')
+    last_record_id = Column(BigInteger, comment='上一次调度记录id')
     created_id = Column(BigInteger, nullable=False, comment='创建人')
     created_time = Column(DateTime, nullable=False, comment='创建日期')
     modify_id = Column(BigInteger, comment='修改人')
@@ -44,6 +45,21 @@ class DispatchJob(Base):
     trace_id = Column(String(255), comment='跟踪链路id')
     is_active = Column(BIT(1), nullable=False, comment='是否启用')
 
+class DispatchRecord(Base):
+    __tablename__ = 'dispatch_record'
+    __table_args__ = {'comment': '调度记录表'}
+
+    id = Column(BigInteger, primary_key=True, unique=True, comment='调度记录主键id')
+    job_id = Column(BigInteger, nullable=False, comment='所属jobid')
+    flow_task_id = Column(BigInteger, comment='流程任务id')
+    status = Column(Integer, nullable=False, comment='调度状态（1、调度中，2、成功，3失败）')
+    result_message = Column(Text, comment='结果消息内容')
+    created_id = Column(BigInteger, nullable=False, comment='创建人')
+    created_time = Column(DateTime, nullable=False, comment='创建日期')
+    modify_id = Column(BigInteger, comment='修改人')
+    modify_time = Column(DateTime, comment='修改日期')
+    trace_id = Column(String(255), comment='跟踪链路id')
+    is_active = Column(BIT(1), nullable=False, comment='是否启用')
 
 class Flow(Base):
     __tablename__ = 'flow'
