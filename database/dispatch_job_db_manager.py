@@ -6,6 +6,10 @@ class DispatchJobDBManager:
     @db_session
     def get_all_dispatch_job(session):
         return session.query(DispatchJob).all()
+    
+    @db_session
+    def get_all_active_dispatch_job(session):
+        return session.query(DispatchJob).filter(DispatchJob.is_active == True).all()
 
     @db_session
     def get_dispatch_job_by_id(session, id):
