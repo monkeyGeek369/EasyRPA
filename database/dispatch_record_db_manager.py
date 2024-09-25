@@ -13,7 +13,7 @@ class DispatchRecordDBManager:
         return session.query(DispatchRecord).filter(DispatchRecord.id == id).first()
     
     @db_session
-    def create_dispatch_record(session, dispatch_record:DispatchRecord):
+    def create_dispatch_record(session, dispatch_record:DispatchRecord) -> DispatchRecord:
         # job_id不可以为空
         if number_tool.num_is_empty(dispatch_record.job_id):
             raise ValueError("Job ID cannot be empty")
