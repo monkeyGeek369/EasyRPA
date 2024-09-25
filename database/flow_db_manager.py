@@ -10,6 +10,10 @@ class FlowDbManager:
     @db_session
     def get_flow_by_id(session, flow_id) -> Flow:
         return session.query(Flow).filter(Flow.id == flow_id).first()
+    
+    @db_session
+    def get_flow_by_flow_code(session, flow_code) -> Flow:
+        return session.query(Flow).filter(Flow.flow_code == flow_code).first()
 
     @db_session
     def create_flow(session, flow: Flow):

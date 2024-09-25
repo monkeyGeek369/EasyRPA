@@ -5,8 +5,14 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from database.dispatch_job_db_manager import DispatchJobDBManager
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
-from database.models import DispatchJob
+from database.models import DispatchJob,DispatchRecord
 from easyrpa.tools import str_tools,number_tool
+from check.dispatch_job_check import check_dispatch_job
+from easyrpa.enums.job_type_enum import JobTypeEnum
+from easyrpa.enums.job_status_enum import JobStatusEnum
+from database.dispatch_record_db_manager import DispatchRecordDBManager
+from easyrpa.models.flow.flow_task_subscribe_dto import FlowTaskSubscribeDTO
+from easyrpa.models.job.pull_job_req_dto import PullJobReqDTO
 
 def init_APSchedulerTool():
     app = AppConfigManager()
@@ -75,5 +81,53 @@ def add_job_to_scheduler(dispatch_job:DispatchJob):
                       kwargs={'dispatch_job':dispatch_job})
 
 def job_execute_func(dispatch_job:DispatchJob):
-    # todo
-    print('job execute func')
+    # 基础校验
+    check_dispatch_job(job=dispatch_job)
+
+    if dispatch_job.job_type == JobTypeEnum.DATA_PULL.value[1]:
+        # 数据爬取处理
+        job_execute_pull(job=dispatch_job)
+    elif dispatch_job.job_type == JobTypeEnum.DATA_PUSH.value[1]:
+        # 数据推送处理
+        job_execute_push(job=dispatch_job)
+    else:
+        raise EasyRpaException('job type not support',EasyRpaExceptionCodeEnum.SYSTEM_NOT_IMPLEMENT.value[1],None)
+    
+def job_execute_pull(job:DispatchJob):
+    dispatch_record = None
+
+    try:
+        if number_tool.num_is_empty(job.id):
+            raise EasyRpaException('job_id cannot be empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None)
+
+        # 创建执行纪律
+        record = DispatchRecord(job_id=job.id,
+                                status= JobStatusEnum.DISPATCHING.value[1]
+                                )
+        dispatch_record = DispatchRecordDBManager.create_dispatch_record(dispatch_record=record)
+
+        # 需要查询配置数据吗?或者还需要组装请求模式吗?
+
+        # 请求模型组装?
+        pull_req = PullJobReqDTO()
+
+        # 触发任务执行
+        sub = FlowTaskSubscribeDTO()
+
+        # 更新执行记录
+
+        # 更新job记录:last_record_id
+
+        # 记录日志
+
+        pass
+    except Exception as e:
+        # 记录日志
+
+        # 更新执行记录
+        if dispatch_record is not None:
+            pass
+        pass
+
+def job_execute_push(job:DispatchJob):
+    pass

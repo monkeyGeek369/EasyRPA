@@ -23,9 +23,18 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         sub_check.flow_task_subscribe_dto_check(dto)
 
         # 查询流程
-        flow = FlowDbManager.get_flow_by_id(dto.flow_id)
+        flow = None
+        if str_tools.str_is_not_empty(dto.flow_code):
+            flow = FlowDbManager.get_flow_by_flow_code(dto.flow_code)
+        else:
+            flow = FlowDbManager.get_flow_by_id(dto.flow_id)
+
         if flow is None:
             raise EasyRpaException("""flow {} not found""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
+        
+        dto.flow_id = flow.id
+        dto.flow_code = flow.flow_code
+
         if str_tools.str_is_empty(flow.request_check_script):
             raise EasyRpaException("""flow {} not found check script""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
         if str_tools.str_is_empty(flow.request_adapt_script):
