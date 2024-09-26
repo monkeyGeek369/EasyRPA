@@ -87,3 +87,9 @@ class DispatchDataDBManager:
             return dispatch_data
 
         return None
+    
+    def search_by_job_id_and_data_business_no(session,job_id:int,data_business_no) -> DispatchData:
+        if number_tool.num_is_empty(job_id) or str_tools.str_is_empty(data_business_no):
+            raise ValueError("Job ID or Data Business No cannot be empty")
+
+        return session.query(DispatchData).filter(DispatchData.job_id == job_id,DispatchData.data_business_no == data_business_no).first()

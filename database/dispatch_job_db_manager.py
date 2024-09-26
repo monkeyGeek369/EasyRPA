@@ -12,7 +12,9 @@ class DispatchJobDBManager:
         return session.query(DispatchJob).filter(DispatchJob.is_active == True).all()
 
     @db_session
-    def get_dispatch_job_by_id(session, id):
+    def get_dispatch_job_by_id(session, id) -> DispatchJob:
+        if number_tool.num_is_empty(id):
+            return None
         return session.query(DispatchJob).filter(DispatchJob.id == id).first()
 
     @db_session

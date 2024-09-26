@@ -9,7 +9,7 @@ class DispatchRecordDBManager:
         return session.query(DispatchRecord).all()
     
     @db_session
-    def get_dispatch_record_by_id(session, id):
+    def get_dispatch_record_by_id(session, id) -> DispatchRecord:
         if number_tool.num_is_empty(id):
             return None
         return session.query(DispatchRecord).filter(DispatchRecord.id == id).first()
