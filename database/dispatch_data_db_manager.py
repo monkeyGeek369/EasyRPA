@@ -64,11 +64,24 @@ class DispatchDataDBManager:
             return True
         return False
     
+    @db_session
     def get_first_sort_asc_by_id(session,job_id:int) -> DispatchData:
         if number_tool.num_is_empty(job_id):
             raise ValueError("Job ID cannot be empty")
 
         dispatch_data = session.query(DispatchData).filter(DispatchData.job_id == job_id).order_by(DispatchData.id.asc()).first()
+
+        if dispatch_data:
+            return dispatch_data
+
+        return None
+    
+    @db_session
+    def get_next_sort_asc_by_id(session,id:int) -> DispatchData:
+        if number_tool.num_is_empty(id):
+            raise ValueError("Dispatch Data ID cannot be empty")
+
+        dispatch_data = session.query(DispatchData).filter(DispatchData.id > id).order_by(DispatchData.id.asc()).first()
 
         if dispatch_data:
             return dispatch_data

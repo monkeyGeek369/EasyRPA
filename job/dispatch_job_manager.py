@@ -169,10 +169,20 @@ def build_data_push_sub_param(job:DispatchJob,record:DispatchRecord,sub_source:i
             next_data = DispatchDataDBManager.get_first_sort_asc_by_id(job_id=job.id)
         else:
             # get current_data_id next data_id
-            pass
+            next_data = DispatchDataDBManager.get_next_sort_asc_by_id(id=job.current_data_id)
 
-    # update data_id
+    if next_data is None:
+        raise EasyRpaException('push job execute, next data is empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None)
+
+    # build sub_param
+    sub_param = FlowTaskSubscribeDTO(flow_configuration_id=job.flow_config_id,
+                            biz_no=record.id,
+                            sub_source=sub_source,
+                            request_standard_message=next_data.data_json,
+                            flow_code=job.flow_code)
     
+    # update data_id
+    up_job = DispatchJob(id=job.id,current_data_id=next_data.id)
+    DispatchJobDBManager.update_dispatch_job(data=up_job)
 
-    # todo
-    pass
+    return sub_param
