@@ -55,7 +55,7 @@ def flow_task_exe_result_notify_job_handler(dto:FlowTaskExeResultNotifyDTO):
                 continue
             item_str = json.dumps(item)
             # blake item,get hash key
-            tool = Blake3Tool(salt=job.id, digest_size=64, key='job')
+            tool = Blake3Tool(salt=str(job.id), key='job')
             hash_key = tool.hash(item_str)
             if str_tools.str_is_empty(hash_key):
                 raise EasyRpaException('task result job handler fail: item hash key is empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
