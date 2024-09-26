@@ -10,6 +10,8 @@ class DispatchRecordDBManager:
     
     @db_session
     def get_dispatch_record_by_id(session, id):
+        if number_tool.num_is_empty(id):
+            return None
         return session.query(DispatchRecord).filter(DispatchRecord.id == id).first()
     
     @db_session

@@ -3,7 +3,7 @@ from database.models import DispatchData
 from easyrpa.tools import str_tools,number_tool
 
 
-class DispatchDatumDBManager:
+class DispatchDataDBManager:
 
     @db_session
     def get_all_dispatch_data(session):
@@ -11,6 +11,8 @@ class DispatchDatumDBManager:
 
     @db_session
     def get_dispatch_data_by_id(session, id):
+        if number_tool.num_is_empty(id):
+            return None
         return session.query(DispatchData).filter(DispatchData.id == id).first()
 
     @db_session
@@ -61,3 +63,14 @@ class DispatchDatumDBManager:
             session.commit()
             return True
         return False
+    
+    def get_first_sort_asc_by_id(session,job_id:int) -> DispatchData:
+        if number_tool.num_is_empty(job_id):
+            raise ValueError("Job ID cannot be empty")
+
+        dispatch_data = session.query(DispatchData).filter(DispatchData.job_id == job_id).order_by(DispatchData.id.asc()).first()
+
+        if dispatch_data:
+            return dispatch_data
+
+        return None

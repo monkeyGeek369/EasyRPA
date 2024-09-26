@@ -15,6 +15,7 @@ from easyrpa.models.flow.flow_task_subscribe_dto import FlowTaskSubscribeDTO
 from database.meta_data_item_db_manager import MetaDataItemDbManager
 from configuration.app_config_manager import AppConfigManager
 from core.flow_manager_core import flow_task_subscribe
+from database.dispatch_data_db_manager import DispatchDataDBManager
 
 def init_APSchedulerTool():
     app = AppConfigManager()
@@ -149,5 +150,29 @@ def job_execute_func(job:DispatchJob):
             DispatchRecordDBManager.update_dispatch_record(data=dispatch_record)
 
 def build_data_push_sub_param(job:DispatchJob,record:DispatchRecord,sub_source:int) -> FlowTaskSubscribeDTO:
+    # base check
+    if number_tool.num_is_empty(job.parent_job):
+        raise EasyRpaException('push job execute, parent_job cannot be empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None)
+    
+    # judge last_record is success
+    next_data = None
+    if number_tool.num_is_not_empty(job.last_record_id):
+        last_record = DispatchRecordDBManager.get_dispatch_record_by_id(id=job.last_record_id)
+        if last_record is not None and last_record.status != JobStatusEnum.DISPATCH_SUCCESS.value[1]:
+            next_data = DispatchDataDBManager.get_dispatch_data_by_id(id=job.current_data_id)
+            
+
+    # get next data
+    if next_data is None:
+        if number_tool.num_is_empty(job.current_data_id):
+            # get job first data
+            next_data = DispatchDataDBManager.get_first_sort_asc_by_id(job_id=job.id)
+        else:
+            # get current_data_id next data_id
+            pass
+
+    # update data_id
+    
+
     # todo
     pass
