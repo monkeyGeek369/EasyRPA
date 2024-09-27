@@ -9,7 +9,8 @@ from database.models import MetaDataItem,FlowTaskLog
 from database.flow_task_db_manager import FlowTaskLogDBManager
 from easyrpa.enums.log_type_enum import LogTypeEnum
 import jsonpickle
-from job import job_exe_result_manager
+from job import dispatch_job_manager
+from database.dispatch_job_db_manager import DispatchJobDBManager
 
 def flow_task_exe_result_notify(dto:FlowTaskExeResultNotifyDTO):
     try:
@@ -20,7 +21,12 @@ def flow_task_exe_result_notify(dto:FlowTaskExeResultNotifyDTO):
         app = AppConfigManager()
         inner_job_dispatch_name = app.get_flow_task_sub_source_inner_job_dispatch_name_en()
         if meta_data_item.name_en == inner_job_dispatch_name:
-            job_exe_result_manager.flow_task_exe_result_notify_job_handler(dto=dto)
+            job = DispatchJobDBManager.get_job_by_record_id(record_id=int(dto.biz_no))
+            if job is None:
+                raise EasyRpaException('job not found',EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
+
+            abs = dispatch_job_manager.get_job_type_impl(job_type=job.job_type)
+            abs.job_type_result_handler(dto=dto)
         else:
             # 其它来源的结果通知：理论上整个平台只有一种结果通知方式，例如mq、callback等，不应根据不同的来源方来自定义构建通知代码
             # todo

@@ -1,6 +1,7 @@
 from database.db_session import db_session,update_common_fields,create_common_fields
 from database.models import DispatchJob
 from easyrpa.tools import str_tools,number_tool
+from database.dispatch_record_db_manager import DispatchRecordDBManager
 
 class DispatchJobDBManager:
     @db_session
@@ -99,3 +100,19 @@ class DispatchJobDBManager:
             session.commit()
             return True
         return False
+    
+    @db_session
+    def get_job_by_record_id(session, record_id:int) -> DispatchJob:
+        if number_tool.num_is_empty(record_id):
+            return None
+        
+        # search job record
+        record = DispatchRecordDBManager.get_dispatch_record_by_id(id=record_id)
+        if record is None or number_tool.num_is_empty(record.job_id):
+            return None
+
+        job = session.query(DispatchJob).filter(DispatchJob.id == record.job_id).first()
+        
+        if job is None:
+            return None
+        return job
