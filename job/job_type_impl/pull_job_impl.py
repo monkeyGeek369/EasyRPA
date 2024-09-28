@@ -23,11 +23,12 @@ class PullJobImplClass(JobTypeAbstractClass):
         super().__init__(JobTypeEnum.DATA_PULL.value[0], JobTypeEnum.DATA_PULL.value[1])
 
     def job_type_exe_param_builder(self,job:DispatchJob,record:DispatchRecord,sub_source:int) -> FlowTaskSubscribeDTO:
-        return FlowTaskSubscribeDTO(flow_configuration_id=job.flow_config_id,
-                                biz_no=record.id,
-                                sub_source=sub_source,
-                                request_standard_message='{}',
-                                flow_code=job.flow_code)
+        return FlowTaskSubscribeDTO(flow_id=0,
+                                    flow_configuration_id=job.flow_config_id,
+                                    biz_no=str(record.id),
+                                    sub_source=sub_source,
+                                    request_standard_message='{}',
+                                    flow_code=job.flow_code)
 
     def job_type_result_handler(self,dto:FlowTaskExeResultNotifyDTO):
         record = None

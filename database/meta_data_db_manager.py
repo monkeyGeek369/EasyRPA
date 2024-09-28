@@ -21,6 +21,7 @@ class MetaDataDbManager:
         create_common_fields(meta)
         session.add(meta)
         session.commit()
+        session.refresh(meta)
         return meta
 
     @db_session
@@ -59,6 +60,7 @@ class MetaDataDbManager:
         
         update_common_fields(existing_meta)
         session.commit()
+        session.refresh(existing_meta)
         return existing_meta
 
     @db_session

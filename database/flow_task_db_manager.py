@@ -49,6 +49,7 @@ class FlowTaskDBManager:
         create_common_fields(flow_task)
         session.add(flow_task)
         session.commit()
+        session.refresh(flow_task)
         
         # 创建流程任务日志
         flow_task_log = FlowTaskLog()
@@ -129,6 +130,7 @@ class FlowTaskDBManager:
 
             update_common_fields(flow_task)
             session.commit()
+            session.refresh(flow_task)
             return flow_task
         return None
 

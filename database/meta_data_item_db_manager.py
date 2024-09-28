@@ -24,6 +24,7 @@ class MetaDataItemDbManager:
         create_common_fields(item)
         session.add(item)
         session.commit()
+        session.refresh(item)
         return item
     
     @db_session
@@ -61,6 +62,7 @@ class MetaDataItemDbManager:
         
         update_common_fields(existing_item)
         session.commit()
+        session.refresh(existing_item)
         return existing_item
     
     @db_session
@@ -75,13 +77,14 @@ class MetaDataItemDbManager:
             raise ValueError("Business Code cannot be empty")
         return session.query(MetaDataItem).filter(MetaDataItem.meta_id == meta_id, MetaDataItem.business_code == business_code).first()
     
-    def get_meta_data_item_by_meta_code_and_name_en(session, meta_code:str, name_en:str):
+    @db_session
+    def get_meta_data_item_by_meta_code_and_name_en(session, meta_code:str, name_en:str) -> MetaDataItem:
         if str_tools.str_is_empty(meta_code):
             raise ValueError("Meta Code cannot be empty")
         if str_tools.str_is_empty(name_en):
             raise ValueError("Name En cannot be empty")
         
-        meta_data = MetaDataDbManager.get_meta_data_by_code(session, meta_code)
+        meta_data = MetaDataDbManager.get_meta_data_by_code(meta_code)
         if meta_data is None:
             raise ValueError("Meta Data not found")
         

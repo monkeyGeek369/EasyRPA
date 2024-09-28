@@ -9,4 +9,5 @@ scheduler_tool = init_APSchedulerTool()
 atexit.register(scheduler_tool.shutdown)
 
 if __name__ == '__main__':
-    flask_app.run(host='127.0.0.1', port=5003, debug=True)
+    flask_app.run(host='127.0.0.1', port=5003, debug=True,use_reloader=False)
+    

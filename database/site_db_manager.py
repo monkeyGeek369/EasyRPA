@@ -16,6 +16,7 @@ class SiteDbManager:
         create_common_fields(new_site)
         session.add(new_site)
         session.commit()
+        session.refresh(new_site)
         return new_site.id
 
     @db_session
@@ -34,6 +35,7 @@ class SiteDbManager:
                 site.is_active = is_active
             update_common_fields(site)
             session.commit()
+            session.refresh(site)
             return site
         else:
             return None

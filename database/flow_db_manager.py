@@ -23,6 +23,7 @@ class FlowDbManager:
         create_common_fields(flow)
         session.add(flow)
         session.commit()
+        session.refresh(flow)
         return flow.id
 
     @db_session
@@ -76,6 +77,7 @@ class FlowDbManager:
 
             update_common_fields(existing_flow)
             session.commit()
+            session.refresh(existing_flow)
             return existing_flow
         return None
 

@@ -43,6 +43,7 @@ class DispatchJobDBManager:
         create_common_fields(dispatch_job)
         session.add(dispatch_job)
         session.commit()
+        session.refresh(dispatch_job)
         return dispatch_job
 
     @db_session
@@ -89,6 +90,7 @@ class DispatchJobDBManager:
 
             update_common_fields(dispatch_job)
             session.commit()
+            session.refresh(dispatch_job)
             return dispatch_job
         return None
 

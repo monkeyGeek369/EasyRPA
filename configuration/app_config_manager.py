@@ -4,7 +4,7 @@ class AppConfigManager:
 
     def get_app_config(self):
         config = configparser.ConfigParser()
-        config.read('configuration/app_config.ini')
+        config.read('configuration/app_config.ini', encoding='utf-8')
         app = config['app']
         return app
     
@@ -40,3 +40,7 @@ class AppConfigManager:
     
     def get_jobstores_default(self) -> str:
         return self.get_app_config()['jobstores_default']
+    
+    def isRegisterJobOnAppStart(self) -> bool:
+        config_str = str(self.get_app_config()['register_dispatch_job_on_app_startup']).lower()
+        return False if config_str == 'false' else True

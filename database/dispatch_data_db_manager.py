@@ -28,6 +28,7 @@ class DispatchDataDBManager:
         create_common_fields(dispatch_data)
         session.add(dispatch_data)
         session.commit()
+        session.refresh(dispatch_data)
         return dispatch_data
 
     @db_session
@@ -52,6 +53,7 @@ class DispatchDataDBManager:
 
             update_common_fields(dispatch_data)
             session.commit()
+            session.refresh(dispatch_data)
             return dispatch_data
         return None
 

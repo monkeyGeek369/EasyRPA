@@ -37,6 +37,7 @@ class RobotStatuDBManager:
         create_common_fields(robot_statu)
         session.add(robot_statu)
         session.commit()
+        session.refresh(robot_statu)
         return robot_statu
 
     @db_session
@@ -60,6 +61,7 @@ class RobotStatuDBManager:
 
             update_common_fields(robot_statu)
             session.commit()
+            session.refresh(robot_statu)
             return robot_statu
         return None
 

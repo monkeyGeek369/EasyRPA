@@ -27,6 +27,7 @@ class FlowTaskLogDBManager:
         create_common_fields(flow_task_log)
         session.add(flow_task_log)
         session.commit()
+        session.refresh(flow_task_log)
         return flow_task_log
 
     @db_session
@@ -59,6 +60,7 @@ class FlowTaskLogDBManager:
 
             update_common_fields(flow_task_log)
             session.commit()
+            session.refresh(flow_task_log)
             return flow_task_log
         return None
 

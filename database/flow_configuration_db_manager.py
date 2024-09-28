@@ -35,6 +35,7 @@ class FlowConfigurationDBManager:
         create_common_fields(flow_configuration)
         session.add(flow_configuration)
         session.commit()
+        session.refresh(flow_configuration)
         return flow_configuration
 
     @db_session
@@ -62,6 +63,7 @@ class FlowConfigurationDBManager:
 
             update_common_fields(flow_configuration)
             session.commit()
+            session.refresh(flow_configuration)
             return flow_configuration
         return None
 

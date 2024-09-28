@@ -32,6 +32,7 @@ class RobotLogDBManager:
         create_common_fields(robot_log)
         session.add(robot_log)
         session.commit()
+        session.refresh(robot_log)
         return robot_log
 
     @db_session
@@ -61,6 +62,7 @@ class RobotLogDBManager:
             
             update_common_fields(robot_log)
             session.commit()
+            session.refresh(robot_log)
             return robot_log
         return None
 

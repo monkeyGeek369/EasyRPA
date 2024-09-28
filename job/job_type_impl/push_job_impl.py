@@ -47,11 +47,12 @@ class PushJobImplClass(JobTypeAbstractClass):
             raise EasyRpaException('push job execute, next data is empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None)
 
         # build sub_param
-        sub_param = FlowTaskSubscribeDTO(flow_configuration_id=job.flow_config_id,
-                                biz_no=record.id,
-                                sub_source=sub_source,
-                                request_standard_message=next_data.data_json,
-                                flow_code=job.flow_code)
+        sub_param = FlowTaskSubscribeDTO(flow_id=0,
+                                         flow_configuration_id=job.flow_config_id,
+                                        biz_no=str(record.id),
+                                        sub_source=sub_source,
+                                        request_standard_message=next_data.data_json,
+                                        flow_code=job.flow_code)
         
         # update data_id
         up_job = DispatchJob(id=job.id,current_data_id=next_data.id)

@@ -6,7 +6,7 @@ from database.dispatch_job_db_manager import DispatchJobDBManager
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from database.models import DispatchJob
-from easyrpa.tools import str_tools
+from easyrpa.tools import str_tools,logs_tool
 from easyrpa.enums.job_type_enum import JobTypeEnum
 from configuration.app_config_manager import AppConfigManager
 from job.job_type_impl.job_type_abstract import JobTypeAbstractClass
@@ -26,9 +26,9 @@ def init_APSchedulerTool():
             'processpool': ProcessPoolExecutor(max_workers=app.get_executors_default_process_pool_max_workers())
         },
         job_defaults={
-            'coalesce': app.get_job_default_coalesce(),
-            'max_instances': app.get_job_default_max_instances(),
-            'misfire_grace_time': app.get_job_default_misfire_grace_time(),
+            'coalesce': False if str(app.get_job_default_coalesce()).lower() == 'false' else True,
+            'max_instances': int(app.get_job_default_max_instances()),
+            'misfire_grace_time': int(app.get_job_default_misfire_grace_time()),
         },
         timezone=app.get_job_timezone(),
         jobstores={
@@ -40,7 +40,10 @@ def init_APSchedulerTool():
     scheduler_tool.start()
 
     # 添加job任务
-    add_all_jobs_to_scheduler()
+    if app.isRegisterJobOnAppStart():
+        add_all_jobs_to_scheduler()
+    else:
+        logs_tool.log_business_info('init_APSchedulerTool','not register job on app start',None)
 
     return scheduler_tool
 

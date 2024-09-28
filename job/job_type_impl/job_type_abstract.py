@@ -15,6 +15,7 @@ from database.meta_data_item_db_manager import MetaDataItemDbManager
 from configuration.app_config_manager import AppConfigManager
 from core.flow_manager_core import flow_task_subscribe
 from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
+import jsonpickle
 
 class JobTypeAbstractClass(ABC):
     def __init__(self, name:str, type:int):
@@ -22,6 +23,10 @@ class JobTypeAbstractClass(ABC):
         self.type = type
 
     def execute_job(self,job:DispatchJob):    
+        # job test
+        #print('execute_job_test:'+str(jsonpickle.encode(job)))
+        #return
+
         # 基础校验
         check_dispatch_job(job=job)
 
@@ -43,10 +48,10 @@ class JobTypeAbstractClass(ABC):
             dispatch_record = DispatchRecordDBManager.create_dispatch_record(dispatch_record=record)
 
             # 触发任务执行
-            app = AppConfigManager.get_app_config()
-            sub_source = MetaDataItemDbManager.get_meta_data_item_by_meta_code_and_name_en(meta_code=app.get_flow_task_sub_source_meta_code(),
+            app = AppConfigManager()
+            sub_source_item = MetaDataItemDbManager.get_meta_data_item_by_meta_code_and_name_en(meta_code=app.get_flow_task_sub_source_meta_code(),
                                                                                         name_en=app.get_flow_task_sub_source_inner_job_dispatch_name_en())
-            sub_param = self.job_type_exe_param_builder(job=job,record=dispatch_record,sub_source=sub_source)
+            sub_param = self.job_type_exe_param_builder(job=job,record=dispatch_record,sub_source=int(sub_source_item.business_code))
             sub_result = flow_task_subscribe(dto=sub_param)
 
             # 判断调度结果

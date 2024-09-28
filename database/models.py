@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import BigInteger, Column, DateTime, Integer, String
+from sqlalchemy import BigInteger, Column, DateTime, Integer, String,Text
 from sqlalchemy.dialects.mysql import BIT, LONGTEXT
 from sqlalchemy.ext.declarative import declarative_base
 
