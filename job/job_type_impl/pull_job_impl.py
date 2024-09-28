@@ -71,7 +71,7 @@ class PullJobImplClass(JobTypeAbstractClass):
             for item in data:
                 if item is None:
                     continue
-                item_str = json.dumps(item)
+                item_str = json.dumps(item,ensure_ascii=False)
                 # blake item,get hash key
                 tool = Blake3Tool(salt=str(job.id), key='job')
                 hash_key = tool.hash(item_str)
