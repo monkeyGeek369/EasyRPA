@@ -9,7 +9,7 @@ class DispatchJobTest(unittest.TestCase):
         DispatchJobDBManager.create_dispatch_job(dispatch_job=job)
 
     def test_dispatch_job_update(self):
-        job = DispatchJob(id=1,cron='*/10 * * * * *')
+        job = DispatchJob(id=1,cron='0 0 22,23 * * *')
         DispatchJobDBManager.update_dispatch_job(data=job)
 
     def test_dispatch_job_exe(self):
