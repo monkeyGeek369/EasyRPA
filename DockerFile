@@ -1,0 +1,29 @@
+# 使用easyrpa基础镜像
+FROM easyrpa:0.0.1
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制项目文件到容器中
+COPY /EasyRPA /app/EasyRPA
+COPY /EasyRPA-Common /app/EasyRPA-Common
+
+# 为了在后续的RUN指令中使用Conda环境，我们需要初始化Conda
+RUN conda init bash
+
+# 安装项目依赖
+WORKDIR /app/EasyRPA-Common
+RUN python setup.py bdist_wheel
+
+# 激活Conda环境
+WORKDIR /app/EasyRPA-Common/dist
+SHELL ["conda", "run", "-n", "easyrpa", "/bin/bash", "-c"]
+RUN pip install easyrpa-0.1.1-py3-none-any.whl
+
+# 暴露容器的 5003 端口
+EXPOSE 5003
+
+# 运行 Flask 应用
+WORKDIR /app/EasyRPA
+CMD ["/bin/bash", "-c", "source activate easyrpa && python app.py"]
+#CMD ["/bin/bash"]
