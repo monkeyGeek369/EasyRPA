@@ -10,7 +10,7 @@ from easyrpa.tools import request_tool
 
 def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str):
      # 获取可用机器人-todo：先简单实现
-     url = "http://127.0.0.1:5006/flow/task/async/exe"
+     url = "http://192.168.2.178:5006/flow/task/async/exe"
 
      try:
         # 构造请求参数
