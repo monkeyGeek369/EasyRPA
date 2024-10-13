@@ -3,6 +3,7 @@ FROM easyrpa:0.0.3
 
 # 设置工作目录
 WORKDIR /app
+ENV TZ=Asia/Shanghai
 
 # 复制项目文件到容器中
 COPY /EasyRPA /app/EasyRPA
