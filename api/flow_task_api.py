@@ -12,12 +12,13 @@ from easyrpa.enums.log_type_enum import LogTypeEnum
 import jsonpickle,json
 from database.models import FlowTask,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_res_dto import FlowTaskExeResDTO
-from easyrpa.tools import str_tools
+from easyrpa.tools import str_tools,logs_tool
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 from core.flow_manager_core import get_flow_exe_env_meta_data
 from dataclasses import asdict
 from core.flow_task_exe_result_notify_core import flow_task_exe_result_notify
 from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
+from configuration.app_config_manager import AppConfigManager
 
 flow_task_bp =  Blueprint('flow_task',__name__)
 
@@ -55,27 +56,33 @@ def flow_task_result_handler(dto:FlowTaskExeResDTO) -> bool:
                                                             ,message="""rpa result: {}""".format(rpa_result_message)))
         
         # 获取执行环境
-        meta_data_item = get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
+        app = AppConfigManager()
+        conda_env = app.get_console_default_conda_env()
 
         # 执行返回值脚本
-        dict_response_result = rpa_result_script_exe(flow_exe_env=meta_data_item.name_en
+        dict_response_result = rpa_result_script_exe(flow_exe_env=conda_env
                                                     ,rpa_result_message=rpa_result_message
                                                     ,flow_exe_script=flow.flow_result_handle_script
                                                     ,sub_source=dto.sub_source
                                                     ,flow_config=None)
+        logs_tool.log_business_info(title="flow_task_result_handler",message="rpa_result_script_exe",data=dict_response_result)
         dict_response_result_json = json.dumps(asdict(dict_response_result),ensure_ascii=False)
+        logs_tool.log_business_info(title="flow_task_result_handler",message="dict_response_result_json",data=dict_response_result_json)
         
         # 更新任务+记录日志
         result_status = FlowTaskStatusEnum.SUCCESS.value[1] if dict_response_result.status else FlowTaskStatusEnum.FAIL.value[1]
+        logs_tool.log_business_info(title="flow_task_result_handler",message="result_status",data=result_status)
         FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id
                                                     ,result_code = dict_response_result.code
                                                     ,result_message = dict_response_result.error_msg
                                                     ,result_data = dict_response_result.result
                                                     ,flow_result_handle_message=dict_response_result_json
                                                     ,status= result_status))
+        logs_tool.log_business_info(title="flow_task_result_handler",message="update_flow_task",data=None)
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id= flow_task.id
                                                             ,log_type=LogTypeEnum.TASK_RESULT.value[1]
                                                             ,message="""rpa script result: {}""".format(dict_response_result_json)))
+        logs_tool.log_business_info(title="flow_task_result_handler",message="create_flow_task_log",data=None)
 
         # 执行结果来源推送
         notify = FlowTaskExeResultNotifyDTO(
@@ -98,6 +105,7 @@ def flow_task_result_handler(dto:FlowTaskExeResDTO) -> bool:
         # api返回
         return True
     except Exception as e:
+        logs_tool.log_business_error(title="flow_task_result_handler",message="flow task result handler error",data=dto,exc_info=e)
         # 更新任务+记录日志
         FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id
                                                     ,status=FlowTaskStatusEnum.FAIL.value[1]))

@@ -18,6 +18,7 @@ RUN python setup.py bdist_wheel
 # 激活Conda环境
 WORKDIR /app/EasyRPA-Common/dist
 SHELL ["conda", "run", "-n", "easyrpa", "/bin/bash", "-c"]
+RUN pip uninstall easyrpa-0.1.1-py3-none-any.whl -y
 RUN pip install easyrpa-0.1.1-py3-none-any.whl
 
 # 暴露容器的 5003 端口
@@ -25,5 +26,6 @@ EXPOSE 5003
 
 # 运行 Flask 应用
 WORKDIR /app/EasyRPA
+RUN rm -rf logs
 CMD ["/bin/bash", "-c", "source activate easyrpa && python app.py"]
 #CMD ["/bin/bash"]

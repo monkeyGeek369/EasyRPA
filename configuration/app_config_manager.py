@@ -44,3 +44,6 @@ class AppConfigManager:
     def isRegisterJobOnAppStart(self) -> bool:
         config_str = str(self.get_app_config()['register_dispatch_job_on_app_startup']).lower()
         return False if config_str == 'false' else True
+    
+    def get_console_default_conda_env(self) -> str:
+        return self.get_app_config()['console_default_conda_env']

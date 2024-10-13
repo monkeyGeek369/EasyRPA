@@ -46,13 +46,15 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
             raise EasyRpaException("""flow configuration {} not found""".format(dto.flow_configuration_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
         
         # 获取执行环境元数据
-        meta_data_item = get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
+        rpa_exe_env = get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
+        app = AppConfigManager()
+        conda_env = app.get_console_default_conda_env()
 
         # 执行校验脚本
-        request_check_script_exe(meta_data_item.name_en,dto.request_standard_message,flow.request_check_script,dto.sub_source,flow_configuration.config_json)
+        request_check_script_exe(conda_env,dto.request_standard_message,flow.request_check_script,dto.sub_source,flow_configuration.config_json)
 
         # 执行适配脚本-获取流程报文字典
-        dict_adapter_result = request_adapter_script_exe(meta_data_item.name_en,dto.request_standard_message,flow.request_adapt_script,dto.sub_source,flow_configuration.config_json)
+        dict_adapter_result = request_adapter_script_exe(conda_env,dto.request_standard_message,flow.request_adapt_script,dto.sub_source,flow_configuration.config_json)
 
         # 创建流程任务
         flow_task.flow_id = dto.flow_id
@@ -66,7 +68,7 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         FlowTaskDBManager.create_flow_task(flow_task)
 
         # 流程任务分发
-        flow_task_dispatch(flow,flow_task,flow_exe_env=meta_data_item.name_en)
+        flow_task_dispatch(flow,flow_task,flow_exe_env=rpa_exe_env.name_en)
 
         # 返回结果
         return FlowTaskSubscribeResultDTO(flow_task.id,True,"流程任务创建成功")

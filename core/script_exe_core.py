@@ -1,6 +1,5 @@
 from easyrpa.script_exe.subprocess_python_script import subprocess_script_run,env_activate_command_builder
 from easyrpa.models.base.script_exe_param_model import ScriptExeParamModel
-from easyrpa.tools import request_tool
 from easyrpa.tools.transfer_tools import any_to_str_dict_first_level,dict_to_str_dict_first_level
 from easyrpa.tools.str_tools import str_to_str_dict
 from easyrpa.models.easy_rpa_exception import EasyRpaException
@@ -88,9 +87,10 @@ def rpa_result_script_exe(flow_exe_env:str,rpa_result_message:str
     
     # 执行脚本
     script_result = script_exe_base(flow_exe_env,rpa_result_message,flow_exe_script,sub_source,flow_config)
+    logs_tool.log_business_info(title="rpa_result_script_exe",message="script_exe_base",data=script_result)
 
     # 执行结果异常
-    if str_tools.str_is_empty(script_result.result):
+    if script_result is None or str_tools.str_is_empty(script_result.result):
         return script_result
     
     # 执行结果正常
@@ -127,5 +127,9 @@ def script_exe_base(flow_exe_env:str,flow_standard_message:str
 
     # 调用脚本执行器
     env_activate_command = env_activate_command_builder(flow_exe_env)
+    
+    logs_tool.log_business_info("script_exe_base","环境激活命令",env_activate_command)
     script_result = subprocess_script_run(env_activate_command,"python",flow_exe_script,param)
+    
+    logs_tool.log_business_info("script_exe_base","脚本执行结果",script_result)
     return script_result
