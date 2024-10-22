@@ -30,8 +30,8 @@ class PushJobImplClass(JobTypeAbstractClass):
         next_data = None
         if number_tool.num_is_not_empty(job.last_record_id):
             last_record = DispatchRecordDBManager.get_dispatch_record_by_id(id=job.last_record_id)
-            if last_record is not None and last_record.status != JobStatusEnum.DISPATCH_SUCCESS.value[1]:
-                next_data = DispatchDataDBManager.get_dispatch_data_by_id(id=job.current_data_id)
+            if last_record is not None and last_record.status == JobStatusEnum.DISPATCH_SUCCESS.value[1]:
+                next_data = DispatchDataDBManager.get_next_sort_asc_by_id(id=job.current_data_id,job_id=job.parent_job)
                 
 
         # get next data
