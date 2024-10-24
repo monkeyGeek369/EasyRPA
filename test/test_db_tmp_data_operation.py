@@ -161,34 +161,28 @@ def upload_video(path:str,standart:dict) -> bool:
 
     dir = standart.get("chrome_user_data_dir")
     data_dir = f"{dir[0]}:\{dir[1]}\{dir[2]}"
-
+    #print("check1")
     try:
         with sync_playwright() as playwright:
+            #print("check2")
             # 持久化模式
-            browser = playwright.chromium.launch_persistent_context(
-                # 指定本机用户缓存地址
-                user_data_dir=data_dir,
-                # 接收下载事件
-                accept_downloads=True,
-                # 无头模式
-                headless=False,
-                # 两个参数共同设置浏览器全屏
-                args=['--start-maximized'],
-                no_viewport=True,
-                # 可以自定义分辨率
-                # viewport={'width': 1920, 'height': 1080},
-                # 浏览器类型
-                channel="chrome"
-            )
-           
+            browser = playwright.chromium.launch_persistent_context(user_data_dir=data_dir,headless=False,channel="chrome")
+            #print("check3")
             page = browser.pages[0]
+            #print("check4")
             page.goto(standart.get("website"))
+            #print("check5")
 
             # 进入上传页面
             page.wait_for_timeout(2000)
+            #print("check6")
             with browser.expect_page() as new_page_info:
+                #print("check7")
                 page.get_by_text("投稿").click()
+                #print("check8")
+            #print("check9")
             new_page = new_page_info.value
+            #print("check10")
     
             # 上传文件
             new_page.wait_for_timeout(2000)
