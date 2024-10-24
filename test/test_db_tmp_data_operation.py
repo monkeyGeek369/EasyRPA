@@ -136,7 +136,7 @@ def download_video(standart: dict) -> str:
     ops = {
         'format':'bv+ba/b',
         #'format':'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b',
-        'outtmpl':'C:\\%(title)s.%(ext)s'
+        'outtmpl':'%(title)s.%(ext)s'
     }
 
     info_dict = None
@@ -150,7 +150,7 @@ def download_video(standart: dict) -> str:
     
     # duilder result
     if info_dict is not None:
-        result = "C:\\\\" + info_dict.get("title")+"."+info_dict.get("ext")
+        result = info_dict.get("title")+"."+info_dict.get("ext")
     return result
 
 def upload_video(path:str,standart:dict) -> bool:
@@ -264,12 +264,12 @@ data =standart.get("result")
 code = "99999"
 
 # 判断是否真正的拿到了数据
-if data is None or data == "" or str(data).lower() == "false":
-    status = False
-    code = str(RpaExeResultCodeEnum.FLOW_EXE_ERROR.value[1])
-else:
+if data is not None and str(data).lower() == "true":
     status = True
     code = str(RpaExeResultCodeEnum.SUCCESS.value[1])
+else:
+    status = False
+    code = str(RpaExeResultCodeEnum.FLOW_EXE_ERROR.value[1])
 
 result = ScriptExeResult(status=status,error_msg=error_msg,print_str=None,result=data,code = code)
 

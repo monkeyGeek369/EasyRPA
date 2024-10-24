@@ -40,8 +40,8 @@ class PushJobImplClass(JobTypeAbstractClass):
                 # get job first data
                 next_data = DispatchDataDBManager.get_first_sort_asc_by_id(job_id=job.parent_job)
             else:
-                # get current_data_id next data_id
-                next_data = DispatchDataDBManager.get_next_sort_asc_by_id(id=job.current_data_id,job_id=job.parent_job)
+                # get current_data_id
+                next_data = DispatchDataDBManager.get_dispatch_data_by_id(id=job.current_data_id)
 
         if next_data is None:
             raise EasyRpaException('push job execute, next data is empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None)
