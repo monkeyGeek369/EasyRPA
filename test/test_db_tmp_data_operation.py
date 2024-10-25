@@ -132,11 +132,17 @@ from yt_dlp import YoutubeDL
 def download_video(standart: dict) -> str:
     result = None
 
+    # 基础路径
+    base_path = r"C:\soft_project\download"
+
+    # 如果需要在末尾添加一个额外的反斜杠
+    outdir = os.path.join(base_path, "") + r"\"
+
     # 下载参数
     ops = {
         'format':'bv+ba/b',
         #'format':'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b',
-        'outtmpl':'%(title)s.%(ext)s'
+        'outtmpl':outdir + '%(title)s.%(ext)s'
     }
 
     info_dict = None
@@ -150,7 +156,7 @@ def download_video(standart: dict) -> str:
     
     # duilder result
     if info_dict is not None:
-        result = info_dict.get("title")+"."+info_dict.get("ext")
+        result = outdir+info_dict.get("title")+"."+info_dict.get("ext")
     return result
 
 def upload_video(path:str,standart:dict) -> bool:
@@ -166,12 +172,20 @@ def upload_video(path:str,standart:dict) -> bool:
         with sync_playwright() as playwright:
             #print("check2")
             # 持久化模式
-            browser = playwright.chromium.launch_persistent_context(user_data_dir=data_dir,headless=False,channel="chrome")
+            browser = playwright.chromium.launch_persistent_context(
+                user_data_dir=data_dir,
+                headless=False,
+                args=['--start-maximized'],
+                no_viewport=True,
+                channel="chrome"
+                )
             #print("check3")
             page = browser.pages[0]
             #print("check4")
             page.goto(standart.get("website"))
             #print("check5")
+            #page.wait_for_timeout(10000)
+            #raise Exception("error")
 
             # 进入上传页面
             page.wait_for_timeout(2000)
@@ -226,6 +240,7 @@ def main():
     standart = json.loads(os.environ.get("standard"),object_hook=dict)
 
     # download video
+    #video_path = "123"
     video_path = download_video(standart)
     if video_path is None:
        return
