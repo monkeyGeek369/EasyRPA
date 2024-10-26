@@ -135,14 +135,14 @@ def download_video(standart: dict) -> str:
     # 基础路径
     base_path = r"C:\soft_project\download"
 
-    # 如果需要在末尾添加一个额外的反斜杠
-    outdir = os.path.join(base_path, "") + r"\"
+    # 使用os.path.join()函数拼接路径
+    outdir = os.path.join(base_path, "")
 
     # 下载参数
     ops = {
         'format':'bv+ba/b',
         #'format':'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b',
-        'outtmpl':outdir + '%(title)s.%(ext)s'
+        'outtmpl':os.path.join(outdir, '%(title)s.%(ext)s')
     }
 
     info_dict = None
@@ -156,7 +156,7 @@ def download_video(standart: dict) -> str:
     
     # duilder result
     if info_dict is not None:
-        result = outdir+info_dict.get("title")+"."+info_dict.get("ext")
+        result = os.path.join(outdir, info_dict.get("title") + "." + info_dict.get("ext"))
     return result
 
 def upload_video(path:str,standart:dict) -> bool:
@@ -171,7 +171,7 @@ def upload_video(path:str,standart:dict) -> bool:
     try:
         with sync_playwright() as playwright:
             #print("check2")
-            # 持久化模式
+            # 持久化模式(设置浏览器全屏/无头模式等)
             browser = playwright.chromium.launch_persistent_context(
                 user_data_dir=data_dir,
                 headless=False,
