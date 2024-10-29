@@ -14,7 +14,7 @@ class DispatchJobTest(unittest.TestCase):
 
     def test_dispatch_job_exe(self):
         # search job
-        job = DispatchJobDBManager.get_dispatch_job_by_id(id=2)
+        #job = DispatchJobDBManager.get_dispatch_job_by_id(id=2)
         # exe
         job_type_abc = dispatch_job_manager.get_job_type_impl(job_type=job.job_type)
-        job_type_abc.execute_job(job=job)
+        job_type_abc.execute_job(job_id=2)

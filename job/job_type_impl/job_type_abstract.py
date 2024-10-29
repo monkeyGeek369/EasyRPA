@@ -22,10 +22,14 @@ class JobTypeAbstractClass(ABC):
         self.name = name
         self.type = type
 
-    def execute_job(self,job:DispatchJob):    
-        # job test
-        #print('execute_job_test:'+str(jsonpickle.encode(job)))
-        #return
+    def execute_job(self,job_id:int):    
+        if number_tool.num_is_empty(job_id):
+            raise EasyRpaException("job id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,None)
+        
+        # search job
+        job = DispatchJobDBManager.get_dispatch_job_by_id(id=job_id)
+        if job is None:
+            raise EasyRpaException("job not found",EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,job_id)
 
         # 基础校验
         check_dispatch_job(job=job)

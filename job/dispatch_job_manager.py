@@ -81,7 +81,7 @@ def add_job_to_scheduler(dispatch_job:DispatchJob):
                       day=cron_list[3],
                       month=cron_list[4],
                       day_of_week=cron_list[5],
-                      kwargs={'job':dispatch_job})
+                      kwargs={'job_id':dispatch_job.id})
 
 def get_job_type_impl(job_type:int) -> JobTypeAbstractClass:
     if job_type == JobTypeEnum.DATA_PULL.value[1]:

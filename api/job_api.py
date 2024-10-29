@@ -22,6 +22,6 @@ def flow_task_result_handler(job_id:int) -> bool:
 
     # exe
     job_type_abc = dispatch_job_manager.get_job_type_impl(job_type=job.job_type)
-    job_type_abc.execute_job(job=job)
+    job_type_abc.execute_job(job_id=job_id)
 
     return True
