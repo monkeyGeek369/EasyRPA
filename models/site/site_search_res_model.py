@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from easyrpa.models.base.response_page_base_model import ResponsePageBaseModel
-from site_detail_model import SiteDetailModel
+from models.site.site_detail_model import SiteDetailModel
 
 
 @dataclass
