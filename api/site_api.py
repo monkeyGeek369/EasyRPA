@@ -2,8 +2,10 @@ from flask import Blueprint
 from easyrpa.tools.request_tool import easyrpa_request_wrapper
 from models.site.site_search_req_model import SiteSearchReqModel
 from models.site.site_search_res_model import SiteSearchResModel
+from models.site.site_detail_model import SiteDetailModel
 from easyrpa.tools.number_tool import number_tool
-from easyrpa.tools.str_tools import str_tools
+from easyrpa.tools.str_tools import str_is_empty
+from easyrpa.tools.json_tools import JsonTool
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from core.site_manager_core import search_sites_by_params
@@ -39,4 +41,15 @@ def search_sites(dto:SiteSearchReqModel) -> SiteSearchResModel:
     result.data=search_result
     result.sorts=dto.sorts
 
-    return result
+    return JsonTool.any_to_dict(result)
+
+@site_api_bp.route('/site/add', methods=['POST'])
+@easyrpa_request_wrapper
+def search_sites(dto:SiteDetailModel) -> bool:
+    # base check
+    if str_is_empty(dto.site_name):
+        raise EasyRpaException("site name is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+    if str_is_empty(dto.site_description):
+        raise EasyRpaException("site description is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+    
+    pass
