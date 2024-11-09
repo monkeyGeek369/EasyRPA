@@ -17,29 +17,30 @@ site_api_bp =  Blueprint('site_api',__name__)
 @easyrpa_request_wrapper
 def search_sites(dto:SiteSearchReqModel) -> SiteSearchResModel:
     # base check
-    if number_tool.num_is_empty(dto.page):
+    if number_tool.num_is_empty(dto.get("page")):
         raise EasyRpaException("search page is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
-    if number_tool.num_is_empty(dto.size):
+    if number_tool.num_is_empty(dto.get("page_size")):
         raise EasyRpaException("search page size is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
     
     # dto to do
     site_obj = Site()
-    site_obj.id = dto.id
-    site_obj.site_name = dto.site_name
-    site_obj.site_description = dto.site_description
-    site_obj.is_active = dto.is_active
+    site_obj.id = dto.get("id")
+    site_obj.site_name = dto.get("site_name")
+    site_obj.site_description = dto.get("site_description")
+    site_obj.is_active = dto.get("is_active")
 
     # search from db
-    search_result = search_sites_by_params(do=site_obj,page=dto.page,page_size=dto.page_size,sorts=dto.sorts)
+    search_result = search_sites_by_params(do=site_obj,page=dto.get("page"),page_size=dto.get("page_size"),sorts=dto.get("sorts"))
     total = 0
     if search_result is not None:
         total = len(search_result)
 
     # return
-    result = SiteSearchResModel()
-    result.total=total
-    result.data=search_result
-    result.sorts=dto.sorts
+    result = SiteSearchResModel(
+        total=total,
+        data=search_result,
+        sorts=dto.get("sorts")
+    )
 
     return JsonTool.any_to_dict(result)
 
