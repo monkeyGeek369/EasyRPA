@@ -15,7 +15,6 @@ from database.meta_data_item_db_manager import MetaDataItemDbManager
 from configuration.app_config_manager import AppConfigManager
 from core.flow_manager_core import flow_task_subscribe
 from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
-import jsonpickle
 
 class JobTypeAbstractClass(ABC):
     def __init__(self, name:str, type:int):

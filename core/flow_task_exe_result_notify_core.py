@@ -1,5 +1,6 @@
 from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
 from easyrpa.tools import str_tools,number_tool
+from easyrpa.tools.json_tools import JsonTool
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from configuration.app_config_manager import AppConfigManager
@@ -8,7 +9,6 @@ from database.meta_data_item_db_manager import MetaDataItemDbManager
 from database.models import MetaDataItem,FlowTaskLog
 from database.flow_task_db_manager import FlowTaskLogDBManager
 from easyrpa.enums.log_type_enum import LogTypeEnum
-import jsonpickle
 from job import dispatch_job_manager
 from database.dispatch_job_db_manager import DispatchJobDBManager
 
@@ -35,7 +35,7 @@ def flow_task_exe_result_notify(dto:FlowTaskExeResultNotifyDTO):
         # 日志记录
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id= dto.flow_task_id
                                                             ,log_type=LogTypeEnum.TASK_RESULT_NOTIFY.value[1]
-                                                            ,message="""flow task exe result notify success: {}""".format(jsonpickle.encode(dto))))
+                                                            ,message="""flow task exe result notify success: {}""".format(JsonTool.any_to_json(dto))))
     except Exception as e:
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id= dto.flow_task_id
                                                             ,log_type=LogTypeEnum.TASK_RESULT_NOTIFY.value[1]

@@ -9,7 +9,7 @@ from database.flow_task_db_manager import FlowTaskDBManager
 from database.flow_task_db_manager import FlowTaskLogDBManager
 from easyrpa.models.scripty_exe_result import ScriptExeResult
 from easyrpa.enums.log_type_enum import LogTypeEnum
-import jsonpickle,json
+import json
 from database.models import FlowTask,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_res_dto import FlowTaskExeResDTO
 from easyrpa.tools import str_tools,logs_tool
@@ -24,7 +24,23 @@ flow_task_bp =  Blueprint('flow_task',__name__)
 
 @flow_task_bp.route('/flow/task/result/handler', methods=['POST'])
 @easyrpa_request_wrapper
-def flow_task_result_handler(dto:FlowTaskExeResDTO) -> bool:
+def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
+    dto = FlowTaskExeResDTO(
+        task_id=req.get("task_id"),
+        site_id=req.get("site_id"),
+        flow_id=req.get("flow_id"),
+        flow_code=req.get("flow_code"),
+        flow_name=req.get("flow_name"),
+        flow_rpa_type=req.get("flow_rpa_type"),
+        flow_exe_env=req.get("flow_exe_env"),
+        sub_source=req.get("sub_source"),
+        status=req.get("status"),
+        error_msg=req.get("error_msg"),
+        print_str=req.get("print_str"),
+        result=req.get("result"),
+        code=req.get("code")
+    )
+
     # 查询流程任务
     flow_task = FlowTaskDBManager.get_flow_task_by_id(dto.task_id)
     if flow_task is None:

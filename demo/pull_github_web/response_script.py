@@ -10,8 +10,9 @@ from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from easyrpa.enums.rpa_exe_result_code_enum import RpaExeResultCodeEnum
 from easyrpa.models.scripty_exe_result import ScriptExeResult
+from easyrpa.tools.json_tools import JsonTool
 import os
-import json,jsonpickle
+import json
 
 # 将json字符串转换为dict取值
 standart = json.loads(os.environ.get("standard"),object_hook=dict)
@@ -33,4 +34,4 @@ else:
 
 result = ScriptExeResult(status=status,error_msg=error_msg,print_str=None,result=data,code = code)
 
-print(jsonpickle.encode(result))
+print(JsonTool.any_to_json(result))

@@ -89,3 +89,7 @@ class FlowDbManager:
             session.commit()
             return True
         return False
+    
+    @db_session
+    def get_flow_by_site_id(session, site_id:int) -> list[Flow]:
+        return session.query(Flow).filter(Flow.site_id == site_id).all()
