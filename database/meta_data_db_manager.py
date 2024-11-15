@@ -68,3 +68,52 @@ class MetaDataDbManager:
         if str_tools.str_is_empty(code):
             raise ValueError("Meta Data Code cannot be empty")
         return session.query(MetaData).filter(MetaData.code == code).first()
+    
+    @db_session
+    def get_meta_data_by_id(session, id:int) -> MetaData:
+        if number_tool.num_is_empty(id):
+            raise ValueError("Meta Data ID cannot be empty")
+        return session.query(MetaData).filter(MetaData.id == id).first()
+    
+    @db_session
+    def select_page_list(session,do:MetaData,page: int,page_size: int,sorts: dict) -> list[MetaData]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(MetaData, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(MetaData, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(MetaData, key).desc())
+
+        # 执行查询
+        query = session.query(MetaData).filter(
+            MetaData.id == do.id if do.id is not None else True,
+            MetaData.name.contains(do.name) if do.name is not None else True,
+            MetaData.code.contains(do.code) if do.code is not None else True,
+            MetaData.description.contains(do.description) if do.description is not None else True,
+            MetaData.created_id == do.created_id if do.created_id is not None else True,
+            MetaData.modify_id == do.modify_id if do.modify_id is not None else True,
+            MetaData.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:MetaData) -> int:
+        query = session.query(MetaData).filter(
+            MetaData.id == do.id if do.id is not None else True,
+            MetaData.name.contains(do.name) if do.name is not None else True,
+            MetaData.code.contains(do.code) if do.code is not None else True,
+            MetaData.description.contains(do.description) if do.description is not None else True,
+            MetaData.created_id == do.created_id if do.created_id is not None else True,
+            MetaData.modify_id == do.modify_id if do.modify_id is not None else True,
+            MetaData.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()
