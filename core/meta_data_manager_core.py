@@ -8,6 +8,7 @@ from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from easyrpa.tools.common_tools import CommonTools
 from database.meta_data_db_manager import MetaDataDbManager
 from database.meta_data_item_db_manager import MetaDataItemDbManager
+from transfer import meta_data_transfer
 
 def search_meta_data_by_params(do:MetaData,page: int,page_size: int,sorts: list[SortBaseModel]) -> list[MetaDataDetailModel]:
     # search db
@@ -15,7 +16,7 @@ def search_meta_data_by_params(do:MetaData,page: int,page_size: int,sorts: list[
                                                page=CommonTools.initPage(page=page),
                                                page_size=CommonTools.initPageSize(pageSize=page_size),
                                                sorts=CommonTools.initSorts(sorts=sorts)) 
-    result = MetaDataDbManager(db_result)
+    result = meta_data_transfer.metaData2MetaDataDetailModels(db_result)
     
     return result
 
