@@ -74,6 +74,8 @@ class FlowDbManager:
                 
             if str_tools.str_is_not_empty(flow.flow_result_handle_script) and existing_flow.flow_result_handle_script != flow.flow_result_handle_script:
                 existing_flow.flow_result_handle_script = flow.flow_result_handle_script
+            
+            existing_flow.is_active = flow.is_active
 
             update_common_fields(existing_flow)
             session.commit()
@@ -93,3 +95,54 @@ class FlowDbManager:
     @db_session
     def get_flow_by_site_id(session, site_id:int) -> list[Flow]:
         return session.query(Flow).filter(Flow.site_id == site_id).all()
+    
+    @db_session
+    def select_page_list(session,do:Flow,page: int,page_size: int,sorts: dict) -> list[Flow]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(Flow, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(Flow, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(Flow, key).desc())
+
+        # 执行查询
+        query = session.query(Flow).filter(
+            Flow.id == do.id if do.id is not None else True,
+            Flow.site_id == do.site_id if do.site_id is not None else True,
+            Flow.flow_code.contains(do.flow_code) if do.flow_code is not None else True,
+            Flow.flow_name.contains(do.flow_name) if do.flow_name is not None else True,
+            Flow.flow_rpa_type == do.flow_rpa_type if do.flow_rpa_type is not None else True,
+            Flow.flow_exe_env == do.flow_exe_env if do.flow_exe_env is not None else True,
+            Flow.flow_biz_type == do.flow_biz_type if do.flow_biz_type is not None else True,
+            Flow.retry_code.contains(do.retry_code) if do.retry_code is not None else True,
+            Flow.created_id == do.created_id if do.created_id is not None else True,
+            Flow.modify_id == do.modify_id if do.modify_id is not None else True,
+            Flow.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:Flow) -> int:
+        query = session.query(Flow).filter(
+            Flow.id == do.id if do.id is not None else True,
+            Flow.site_id == do.site_id if do.site_id is not None else True,
+            Flow.flow_code.contains(do.flow_code) if do.flow_code is not None else True,
+            Flow.flow_name.contains(do.flow_name) if do.flow_name is not None else True,
+            Flow.flow_rpa_type == do.flow_rpa_type if do.flow_rpa_type is not None else True,
+            Flow.flow_exe_env == do.flow_exe_env if do.flow_exe_env is not None else True,
+            Flow.flow_biz_type == do.flow_biz_type if do.flow_biz_type is not None else True,
+            Flow.retry_code.contains(do.retry_code) if do.retry_code is not None else True,
+            Flow.created_id == do.created_id if do.created_id is not None else True,
+            Flow.modify_id == do.modify_id if do.modify_id is not None else True,
+            Flow.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()

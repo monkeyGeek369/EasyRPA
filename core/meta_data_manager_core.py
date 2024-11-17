@@ -65,3 +65,10 @@ def delete_meta_data(id:int) -> bool:
     
     MetaDataDbManager.delete_meta_data(id=id)
     return True
+
+def search_meta_datas_by_codes(codes:list[str]) -> list[MetaDataDetailModel]:
+    if codes is None or len(codes) == 0:
+        return []
+    db_result = MetaDataDbManager.get_meta_datas_by_codes(codes=codes)
+    result = meta_data_transfer.metaData2MetaDataDetailModels(db_result)
+    return result

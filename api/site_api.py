@@ -69,3 +69,17 @@ def update_site(dto:SiteUpdateReqModel) -> bool:
 @easyrpa_request_wrapper
 def delete_site(site_id:int) -> bool:
     return site_manager_core.delete_site(site_id=site_id)
+
+@site_api_bp.route('/site/search/name', methods=['POST'])
+@easyrpa_request_wrapper
+def search_sites_by_name(name:str) -> SiteSearchResModel:
+    data = site_manager_core.search_site_by_name(site_name=name)
+    
+    # return
+    result = SiteSearchResModel(
+        total=None,
+        data=data,
+        sorts=None
+    )
+
+    return JsonTool.any_to_dict(result)

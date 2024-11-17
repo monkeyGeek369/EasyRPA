@@ -47,3 +47,9 @@ class AppConfigManager:
     
     def get_console_default_conda_env(self) -> str:
         return self.get_app_config()['console_default_conda_env']
+    
+    def get_flow_rpa_type_meta_code(self) -> str:
+        return self.get_app_config()['flow_rpa_type_meta_code']
+    
+    def get_flow_biz_type_meta_code(self) -> str:
+        return self.get_app_config()['flow_biz_type_meta_code']

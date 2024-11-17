@@ -46,3 +46,15 @@ def delete_site(site_id:int) -> bool:
         raise EasyRpaException("site is using",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,site_id)
     
     return SiteDbManager.delete_site(site_id=site_id)
+
+def search_sites_by_ids(site_ids:list[int]) -> list[SiteDetailModel]:
+    db_result = SiteDbManager.select_sites_by_ids(ids=site_ids)
+    result = sits2SiteDetailModels(db_result)
+    return result
+
+def search_site_by_name(site_name:str) -> list[SiteDetailModel]:
+    if str_tools.str_is_empty(site_name):
+        raise EasyRpaException("site name is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,site_name)
+    db_result = SiteDbManager.search_site_by_name(site_name=site_name)
+    result = sits2SiteDetailModels(db_result)
+    return result

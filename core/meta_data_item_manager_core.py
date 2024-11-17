@@ -60,3 +60,11 @@ def delete_meta_data_item(item_id:int) -> bool:
 
     MetaDataItemDbManager.delete_meta_data_item(item=item)
     return True
+
+def get_meta_data_item_map(meta_id:int) -> dict:
+    if number_tool.num_is_empty(meta_id):
+        raise EasyRpaException("meta id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,meta_id)
+    
+    db_result = MetaDataItemDbManager.get_all_meta_data_items_by_meta_id(meta_id=meta_id)
+    result = {item.business_code: item for item in db_result}
+    return result

@@ -97,3 +97,15 @@ class SiteDbManager:
             Site.is_active == do.is_active if do.is_active is not None else True
             )
         return query.count()
+    
+    @db_session
+    def select_sites_by_ids(session,ids:list[int]) -> list[Site]:
+        if len(ids) == 0:
+            return []
+        return session.query(Site).filter(Site.id.in_(ids))
+
+    @db_session
+    def search_site_by_name(session,site_name:str) -> list[Site]:
+        if not site_name:
+            return []
+        return session.query(Site).filter(Site.site_name.contains(site_name)).all()

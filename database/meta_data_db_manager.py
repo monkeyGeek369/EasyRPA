@@ -127,3 +127,9 @@ class MetaDataDbManager:
             MetaData.is_active == do.is_active if do.is_active is not None else True
             )
         return query.count()
+    
+    @db_session
+    def get_meta_datas_by_codes(session, codes:list[str]) -> list[MetaData]:
+        if codes is None or len(codes) <= 0:
+            raise ValueError("Meta Data Codes cannot be empty")
+        return session.query(MetaData).filter(MetaData.code.in_(codes)).all()
