@@ -31,7 +31,12 @@ class MetaDataItemDbManager:
     def delete_meta_data_item(session, item: MetaDataItem):
         if number_tool.num_is_empty(item.id):
             raise ValueError("Meta Data Item ID cannot be empty")
-        session.delete(item.id)
+        
+        # 根据id查询
+        existing_item = session.query(MetaDataItem).filter(MetaDataItem.id == item.id).first()
+        if existing_item is None:
+            raise ValueError("Meta Data Item not found")
+        session.delete(existing_item)
         session.commit()
 
     @db_session
@@ -59,6 +64,8 @@ class MetaDataItemDbManager:
         
         if str_tools.str_is_not_empty(item.name_cn) and existing_item.name_cn != item.name_cn:
             existing_item.name_cn = item.name_cn
+
+        existing_item.is_active = item.is_active
         
         update_common_fields(existing_item)
         session.commit()
@@ -66,8 +73,8 @@ class MetaDataItemDbManager:
         return existing_item
     
     @db_session
-    def get_all_meta_data_items_by_meta_id(session, meta_id:int):
-        return session.query(MetaDataItem).filter(MetaDataItem.meta_id == meta_id)
+    def get_all_meta_data_items_by_meta_id(session, meta_id:int) -> list[MetaDataItem]:
+        return session.query(MetaDataItem).filter(MetaDataItem.meta_id == meta_id).all()
     
     @db_session
     def get_meta_data_item_by_meta_id_and_business_code(session, meta_id:int, business_code:str):

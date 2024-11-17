@@ -32,7 +32,7 @@ def search_meta_data(dto:MetaDataSearchReqModel) -> MetaDataSearchResModel:
     meta_data.is_active = dto.get("is_active")
 
     # search from db
-    search_result = meta_data_manager_core.search_sites_by_params(do=meta_data,page=dto.get("page"),page_size=dto.get("page_size"),sorts=dto.get("sorts"))
+    search_result = meta_data_manager_core.search_meta_data_by_params(do=meta_data,page=dto.get("page"),page_size=dto.get("page_size"),sorts=dto.get("sorts"))
     
     # search count
     total = meta_data_manager_core.search_count_by_params(do=meta_data)

@@ -15,8 +15,10 @@ class MetaDataDbManager:
             raise ValueError("Description cannot be empty")
         
         # name或code不可以重复
-        if session.query(MetaData).filter(MetaData.name == meta.name, MetaData.code == meta.code).first():
-            raise ValueError("Name or Code already exists")
+        if session.query(MetaData).filter(MetaData.name == meta.name).first():
+            raise ValueError("Name already exists")
+        if session.query(MetaData).filter(MetaData.code == meta.code).first():
+            raise ValueError("Code already exists")
 
         create_common_fields(meta)
         session.add(meta)
@@ -28,7 +30,12 @@ class MetaDataDbManager:
     def delete_meta_data(session, id:int):
         if number_tool.num_is_empty(id):
             raise ValueError("Meta Data ID cannot be empty")
-        session.delete(id)
+        # select by id
+        meta = session.query(MetaData).filter(MetaData.id == id).first()
+        if meta is None:
+            raise ValueError("Meta Data not found")
+
+        session.delete(meta)
         session.commit()
 
     @db_session
@@ -57,6 +64,9 @@ class MetaDataDbManager:
         
         if str_tools.str_is_not_empty(meta.description) and existing_meta.description != meta.description:
             existing_meta.description = meta.description
+        
+        if meta.is_active is not None:
+            existing_meta.is_active = meta.is_active
         
         update_common_fields(existing_meta)
         session.commit()

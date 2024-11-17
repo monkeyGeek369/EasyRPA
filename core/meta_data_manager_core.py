@@ -63,4 +63,5 @@ def delete_meta_data(id:int) -> bool:
     if ls is not None and len(ls) > 0:
         raise EasyRpaException("meta data is using",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,id)
     
-    return MetaDataDbManager.delete_meta_data(id=id)
+    MetaDataDbManager.delete_meta_data(id=id)
+    return True
