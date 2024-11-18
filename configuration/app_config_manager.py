@@ -53,3 +53,6 @@ class AppConfigManager:
     
     def get_flow_biz_type_meta_code(self) -> str:
         return self.get_app_config()['flow_biz_type_meta_code']
+    
+    def get_flow_retry_code_meta_code(self) -> str:
+        return self.get_app_config()['flow_retry_code_meta_code']

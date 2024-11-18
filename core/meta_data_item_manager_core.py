@@ -1,12 +1,11 @@
 from models.meta_data_item.meta_data_item_detail_model import MetaDataItemDetailModel
 from database.meta_data_item_db_manager import MetaDataItemDbManager
-from transfer.site_transfer import sits2SiteDetailModels
 from easyrpa.tools import number_tool,str_tools
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
-from easyrpa.tools.common_tools import CommonTools
 from transfer import meta_data_transfer
 from database.models import MetaDataItem
+from core import meta_data_manager_core
 
 def search_by_params(id:int) -> list[MetaDataItemDetailModel]:
     # search db
@@ -67,4 +66,15 @@ def get_meta_data_item_map(meta_id:int) -> dict:
     
     db_result = MetaDataItemDbManager.get_all_meta_data_items_by_meta_id(meta_id=meta_id)
     result = {item.business_code: item for item in db_result}
+    return result
+
+def get_meta_data_item_by_meta_code(code:str) -> list[MetaDataItemDetailModel]:
+    # search meta data
+    meta_data = meta_data_manager_core.search_meta_data_by_code(code=code)
+    if meta_data is None:
+        return []
+
+    # search meta data item
+    db_result = MetaDataItemDbManager.get_all_meta_data_items_by_meta_id(meta_id=meta_data.id)
+    result = meta_data_transfer.metaDataItems2MetaDataItemDetailModels(db_result)
     return result

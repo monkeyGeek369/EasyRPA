@@ -8,10 +8,11 @@ from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from database.models import Flow
 from models.flow.flow_search_req_model import FlowSearchReqModel
 from models.flow.flow_search_res_model import FlowSearchResModel
-from core import flow_manager_core
+from core import flow_manager_core,meta_data_item_manager_core
 from models.flow.flow_add_req_model import FlowAddReqModel
 from models.flow.flow_update_req_model import FlowUpdateReqModel
 from models.meta_data_item.meta_data_item_search_res_model import MetaDataItemSearchResModel
+from configuration.app_config_manager import AppConfigManager
 
 flow_api_bp =  Blueprint('flow_api',__name__)
 
@@ -116,15 +117,48 @@ def delete_flow(id:int) -> bool:
 
 @flow_api_bp.route('/flow/rpa/type', methods=['POST'])
 @easyrpa_request_wrapper
-def get_flow_rpa_type() -> MetaDataItemSearchResModel:
-    pass
+def get_flow_rpa_type(params) -> MetaDataItemSearchResModel:
+    app = AppConfigManager()
+    meta_code = app.get_flow_rpa_type_meta_code()
+    data = meta_data_item_manager_core.get_meta_data_item_by_meta_code(code=meta_code)
+    result = MetaDataItemSearchResModel(
+        data=data
+    )
+
+    return JsonTool.any_to_dict(result)
 
 @flow_api_bp.route('/flow/exe/env', methods=['POST'])
 @easyrpa_request_wrapper
-def get_flow_exe_env() -> MetaDataItemSearchResModel:
-    pass
+def get_flow_exe_env(params) -> MetaDataItemSearchResModel:
+    app = AppConfigManager()
+    meta_code = app.get_flow_exe_env_meta_code()
+    data = meta_data_item_manager_core.get_meta_data_item_by_meta_code(code=meta_code)
+    result = MetaDataItemSearchResModel(
+        data=data
+    )
+
+    return JsonTool.any_to_dict(result)
 
 @flow_api_bp.route('/flow/biz/type', methods=['POST'])
 @easyrpa_request_wrapper
-def get_flow_biz_type() -> MetaDataItemSearchResModel:
-    pass
+def get_flow_biz_type(params) -> MetaDataItemSearchResModel:
+    app = AppConfigManager()
+    meta_code = app.get_flow_biz_type_meta_code()
+    data = meta_data_item_manager_core.get_meta_data_item_by_meta_code(code=meta_code)
+    result = MetaDataItemSearchResModel(
+        data=data
+    )
+
+    return JsonTool.any_to_dict(result)
+
+@flow_api_bp.route('/flow/retry/code', methods=['POST'])
+@easyrpa_request_wrapper
+def get_flow_retry_code(params) -> MetaDataItemSearchResModel:
+    app = AppConfigManager()
+    meta_code = app.get_flow_retry_code_meta_code()
+    data = meta_data_item_manager_core.get_meta_data_item_by_meta_code(code=meta_code)
+    result = MetaDataItemSearchResModel(
+        data=data
+    )
+
+    return JsonTool.any_to_dict(result)

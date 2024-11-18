@@ -72,3 +72,10 @@ def search_meta_datas_by_codes(codes:list[str]) -> list[MetaDataDetailModel]:
     db_result = MetaDataDbManager.get_meta_datas_by_codes(codes=codes)
     result = meta_data_transfer.metaData2MetaDataDetailModels(db_result)
     return result
+
+def search_meta_data_by_code(code:str) -> MetaDataDetailModel:
+    if str_tools.str_is_empty(code):
+        return None
+    db_result = MetaDataDbManager.get_meta_data_by_code(code=code)
+    result = meta_data_transfer.metaData2MetaDataDetailModel(db_result)
+    return result
