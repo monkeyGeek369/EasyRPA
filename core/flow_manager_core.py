@@ -133,6 +133,9 @@ def base_check(flow:Flow):
         raise EasyRpaException("max_exe_time is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     if str_is_empty(flow.retry_code):
         raise EasyRpaException("retry_code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
+
+def add_flow(flow: Flow) -> int:
+    base_check(flow=flow)
     if str_is_empty(flow.request_check_script):
         raise EasyRpaException("request_check_script is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     if str_is_empty(flow.request_adapt_script):
@@ -141,16 +144,14 @@ def base_check(flow:Flow):
         raise EasyRpaException("flow_exe_script is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     if str_is_empty(flow.flow_result_handle_script):
         raise EasyRpaException("flow_result_handle_script is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
-
-def add_flow(flow: Flow) -> int:
-    base_check(flow=flow)
     return FlowDbManager.create_flow(flow=flow)
 
-def updata_flow(flow: Flow) -> int:
+def updata_flow(flow: Flow) -> bool:
     if num_is_empty(flow.id):
         raise EasyRpaException("id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     base_check(flow=flow)
-    return FlowDbManager.update_flow(flow=flow)
+    FlowDbManager.update_flow(flow=flow)
+    return True
 
 def logic_delete_flow(flow: Flow) -> int:
     if num_is_empty(flow.id):

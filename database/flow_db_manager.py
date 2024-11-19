@@ -146,3 +146,4 @@ class FlowDbManager:
             Flow.is_active == do.is_active if do.is_active is not None else True
             )
         return query.count()
+    
