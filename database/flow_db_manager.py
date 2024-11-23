@@ -75,7 +75,8 @@ class FlowDbManager:
             if str_tools.str_is_not_empty(flow.flow_result_handle_script) and existing_flow.flow_result_handle_script != flow.flow_result_handle_script:
                 existing_flow.flow_result_handle_script = flow.flow_result_handle_script
             
-            existing_flow.is_active = flow.is_active
+            if flow.is_active is not None:
+                existing_flow.is_active = flow.is_active
 
             update_common_fields(existing_flow)
             session.commit()

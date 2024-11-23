@@ -159,3 +159,9 @@ def logic_delete_flow(flow: Flow) -> int:
     if flow.is_active is None:
         raise EasyRpaException("is_active is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     return FlowDbManager.update_flow(flow=flow)
+
+def updata_flow_script(flow: Flow) -> bool:
+    if num_is_empty(flow.id):
+        raise EasyRpaException("id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
+    FlowDbManager.update_flow(flow=flow)
+    return True

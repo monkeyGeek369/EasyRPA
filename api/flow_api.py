@@ -162,3 +162,15 @@ def get_flow_retry_code(params) -> MetaDataItemSearchResModel:
     )
 
     return JsonTool.any_to_dict(result)
+
+@flow_api_bp.route('/flow/update/script', methods=['POST'])
+@easyrpa_request_wrapper
+def update_flow_script(dto:FlowUpdateReqModel) -> bool:
+    flow = Flow(
+        id=dto.get("id"),
+        request_check_script=dto.get("request_check_script"),
+        request_adapt_script=dto.get("request_adapt_script"),
+        flow_exe_script=dto.get("flow_exe_script"),
+        flow_result_handle_script=dto.get("flow_result_handle_script")
+    )
+    return flow_manager_core.updata_flow_script(flow=flow)
