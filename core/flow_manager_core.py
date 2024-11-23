@@ -19,7 +19,7 @@ from database.models import Flow
 from easyrpa.models.base.sort_base_model import SortBaseModel
 from models.flow.flow_detail_model import FlowDetailModel
 from easyrpa.tools.common_tools import CommonTools
-from transfer.flow_transfer import flows2FlowDetailModels
+from transfer.flow_transfer import flows2FlowDetailModels,flow2FlowDetailModel
 from easyrpa.tools.number_tool import num_is_empty
 from easyrpa.tools.str_tools import str_is_empty
 
@@ -165,3 +165,19 @@ def updata_flow_script(flow: Flow) -> bool:
         raise EasyRpaException("id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     FlowDbManager.update_flow(flow=flow)
     return True
+
+def search_flow_by_ids(ids: list[int]) -> dict[int,Flow]:
+    result = FlowDbManager.get_flows_by_ids(flow_ids=ids)
+    if result is None:
+        return {}
+    
+    ret = {}
+    for item in result:
+        ret[item.id] = item
+    return ret
+
+def search_flow_by_name_or_code(query_str:str) -> list[FlowDetailModel]:
+    result = FlowDbManager.search_flow_by_name_or_code(query_str=query_str)
+    if result is None:
+        return []
+    return flows2FlowDetailModels(flows=result)

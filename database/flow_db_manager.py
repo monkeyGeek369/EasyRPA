@@ -12,6 +12,10 @@ class FlowDbManager:
         return session.query(Flow).filter(Flow.id == flow_id).first()
     
     @db_session
+    def get_flows_by_ids(session, flow_ids) -> list[Flow]:
+        return session.query(Flow).filter(Flow.id.in_(flow_ids)).all()
+    
+    @db_session
     def get_flow_by_flow_code(session, flow_code) -> Flow:
         return session.query(Flow).filter(Flow.flow_code == flow_code).first()
 
@@ -147,4 +151,11 @@ class FlowDbManager:
             Flow.is_active == do.is_active if do.is_active is not None else True
             )
         return query.count()
+    
+    @db_session
+    def search_flow_by_name_or_code(session,query_str:str) -> list[Flow]:
+        if not query_str:
+            return []
+
+        return session.query(Flow).filter(Flow.flow_name.contains(query_str) | Flow.flow_code.contains(query_str)).all()
     

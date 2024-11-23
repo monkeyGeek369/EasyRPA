@@ -61,6 +61,10 @@ class FlowConfigurationDBManager:
             if data.config_json:
                 flow_configuration.config_json = data.config_json
 
+            # is_active不为空则可更新
+            if data.is_active is not None:
+                flow_configuration.is_active = data.is_active
+
             update_common_fields(flow_configuration)
             session.commit()
             session.refresh(flow_configuration)
@@ -75,3 +79,47 @@ class FlowConfigurationDBManager:
             session.commit()
             return True
         return False
+    
+    @db_session
+    def select_page_list(session,do:FlowConfiguration,page: int,page_size: int,sorts: dict) -> list[FlowConfiguration]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(FlowConfiguration, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(FlowConfiguration, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(FlowConfiguration, key).desc())
+
+        # 执行查询
+        query = session.query(FlowConfiguration).filter(
+            FlowConfiguration.id == do.id if do.id is not None else True,
+            FlowConfiguration.flow_id == do.flow_id if do.flow_id is not None else True,
+            FlowConfiguration.config_name.contains(do.config_name) if do.config_name is not None else True,
+            FlowConfiguration.config_description.contains(do.config_description) if do.config_description is not None else True,
+            FlowConfiguration.created_id == do.created_id if do.created_id is not None else True,
+            FlowConfiguration.modify_id == do.modify_id if do.modify_id is not None else True,
+            FlowConfiguration.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:FlowConfiguration) -> int:
+        query = session.query(FlowConfiguration).filter(
+            FlowConfiguration.id == do.id if do.id is not None else True,
+            FlowConfiguration.flow_id == do.flow_id if do.flow_id is not None else True,
+            FlowConfiguration.config_name.contains(do.config_name) if do.config_name is not None else True,
+            FlowConfiguration.config_description.contains(do.config_description) if do.config_description is not None else True,
+            FlowConfiguration.created_id == do.created_id if do.created_id is not None else True,
+            FlowConfiguration.modify_id == do.modify_id if do.modify_id is not None else True,
+            FlowConfiguration.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()
+    

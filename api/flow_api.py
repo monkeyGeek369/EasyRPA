@@ -174,3 +174,14 @@ def update_flow_script(dto:FlowUpdateReqModel) -> bool:
         flow_result_handle_script=dto.get("flow_result_handle_script")
     )
     return flow_manager_core.updata_flow_script(flow=flow)
+
+@flow_api_bp.route('/flow/search/dim', methods=['POST'])
+@easyrpa_request_wrapper
+def search_dim_flow(query:str) -> FlowSearchResModel:
+    flows = flow_manager_core.search_flow_by_name_or_code(query_str=query)
+    result = FlowSearchResModel(
+        data=flows,
+        total=None,
+        sorts=None
+    )
+    return result
