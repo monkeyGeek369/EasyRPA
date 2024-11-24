@@ -159,3 +159,10 @@ class FlowDbManager:
 
         return session.query(Flow).filter(Flow.flow_name.contains(query_str) | Flow.flow_code.contains(query_str)).all()
     
+    @db_session
+    def search_flow_by_codes(session,flow_codes:list[str]) -> list[Flow]:
+        if not flow_codes:
+            return []
+        
+        return session.query(Flow).filter(Flow.flow_code.in_(flow_codes)).all()
+    

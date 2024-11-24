@@ -74,3 +74,17 @@ def delete_config(id:int) -> bool:
         raise EasyRpaException("config id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,id)
 
     return FlowConfigurationDBManager.delete_flow_configuration(id=id)
+
+def search_config_by_ids(ids:list[int]) -> list[FlowConfigDetailModel]:
+    if not ids:
+        return []
+
+    configs = FlowConfigurationDBManager.search_config_by_ids(ids=ids)
+    return configs2ConfigDetailModels(configs)
+
+def search_config_by_name(name:str) -> list[FlowConfigDetailModel]:
+    if str_tools.str_is_empty(name):
+        return []
+
+    configs = FlowConfigurationDBManager.search_config_by_name(name=name)
+    return configs2ConfigDetailModels(configs)

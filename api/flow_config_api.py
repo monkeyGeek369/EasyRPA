@@ -74,3 +74,15 @@ def update_config(dto:FlowConfigUpdateReqModel) -> bool:
 def delete_config(id:int) -> bool:
     return flow_config_manager_core.delete_config(id=id)
 
+@flow_config_api_bp.route('/flow/config/dim', methods=['POST'])
+@easyrpa_request_wrapper
+def search_config_dim(name:str) -> FlowConfigSearchResModel:
+    result = flow_config_manager_core.search_config_by_name(name=name)
+    ret = FlowConfigSearchResModel(
+        data=result,
+        total=None,
+        sorts=None
+    )
+
+    return JsonTool.any_to_dict(ret)
+

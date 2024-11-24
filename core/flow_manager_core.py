@@ -181,3 +181,9 @@ def search_flow_by_name_or_code(query_str:str) -> list[FlowDetailModel]:
     if result is None:
         return []
     return flows2FlowDetailModels(flows=result)
+
+def search_flow_by_codes(codes:list[str]) -> list[FlowDetailModel]:
+    result = FlowDbManager.search_flow_by_codes(flow_codes=codes)
+    if result is None:
+        return []
+    return flows2FlowDetailModels(flows=result)

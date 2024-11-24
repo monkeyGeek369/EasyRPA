@@ -123,3 +123,17 @@ class FlowConfigurationDBManager:
             )
         return query.count()
     
+    @db_session
+    def search_config_by_ids(session,ids: list[int]) -> list[FlowConfiguration]:
+        if ids is None or len(ids) == 0:
+            return []
+        
+        return session.query(FlowConfiguration).filter(FlowConfiguration.id.in_(ids)).all()
+    
+    @db_session
+    def search_config_by_name(session,name:str) -> list[FlowConfiguration]:
+        if not name:
+            return []
+        
+        return session.query(FlowConfiguration).filter(FlowConfiguration.config_name.contains(name)).all()
+    

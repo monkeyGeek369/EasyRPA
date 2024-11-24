@@ -77,6 +77,8 @@ class DispatchJobDBManager:
                 dispatch_job.job_type = data.job_type
 
             # parent_job只能更新
+            if data.parent_job == data.id:
+                raise ValueError("Parent job cannot be self") 
             if number_tool.num_is_not_empty(data.parent_job) and dispatch_job.parent_job != data.parent_job:
                 dispatch_job.parent_job = data.parent_job
 
@@ -87,6 +89,10 @@ class DispatchJobDBManager:
             # last_record_id只能更新
             if number_tool.num_is_not_empty(data.last_record_id) and dispatch_job.last_record_id != data.last_record_id:
                 dispatch_job.last_record_id = data.last_record_id
+
+            # is_active只能更新
+            if data.is_active is not None:
+                dispatch_job.is_active = data.is_active
 
             update_common_fields(dispatch_job)
             session.commit()
@@ -118,3 +124,64 @@ class DispatchJobDBManager:
         if job is None:
             return None
         return job
+    
+    @db_session
+    def select_page_list(session,do:DispatchJob,page: int,page_size: int,sorts: dict) -> list[DispatchJob]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(DispatchJob, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(DispatchJob, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(DispatchJob, key).desc())
+
+        # 执行查询
+        query = session.query(DispatchJob).filter(
+            DispatchJob.id == do.id if do.id is not None else True,
+            DispatchJob.job_name.contains(do.job_name) if do.job_name is not None else True,
+            DispatchJob.flow_code == do.flow_code if do.flow_code is not None else True,
+            DispatchJob.flow_config_id == do.flow_config_id if do.flow_config_id is not None else True,
+            DispatchJob.job_type == do.job_type if do.job_type is not None else True,
+            DispatchJob.parent_job == do.parent_job if do.parent_job is not None else True,
+            DispatchJob.created_id == do.created_id if do.created_id is not None else True,
+            DispatchJob.modify_id == do.modify_id if do.modify_id is not None else True,
+            DispatchJob.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:DispatchJob) -> int:
+        query = session.query(DispatchJob).filter(
+            DispatchJob.id == do.id if do.id is not None else True,
+            DispatchJob.job_name.contains(do.job_name) if do.job_name is not None else True,
+            DispatchJob.flow_code == do.flow_code if do.flow_code is not None else True,
+            DispatchJob.flow_config_id == do.flow_config_id if do.flow_config_id is not None else True,
+            DispatchJob.job_type == do.job_type if do.job_type is not None else True,
+            DispatchJob.parent_job == do.parent_job if do.parent_job is not None else True,
+            DispatchJob.created_id == do.created_id if do.created_id is not None else True,
+            DispatchJob.modify_id == do.modify_id if do.modify_id is not None else True,
+            DispatchJob.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()
+    
+    @db_session
+    def search_job_by_ids(session, ids: list[int]) -> list[DispatchJob]:
+        if ids is None or len(ids) == 0:
+            return []
+        
+        return session.query(DispatchJob).filter(DispatchJob.id.in_(ids)).all()
+    
+    @db_session
+    def search_job_by_name(session, name: str) -> list[DispatchJob]:
+        if str_tools.str_is_empty(name):
+            return []
+        return session.query(DispatchJob).filter(DispatchJob.job_name.contains(name)).all()
+    
