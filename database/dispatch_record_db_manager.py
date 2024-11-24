@@ -72,3 +72,47 @@ class DispatchRecordDBManager:
             session.commit()
             return True
         return False
+    
+    @db_session
+    def select_page_list(session,do:DispatchRecord,page: int,page_size: int,sorts: dict) -> list[DispatchRecord]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(DispatchRecord, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(DispatchRecord, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(DispatchRecord, key).desc())
+
+        # 执行查询
+        query = session.query(DispatchRecord).filter(
+            DispatchRecord.id == do.id if do.id is not None else True,
+            DispatchRecord.job_id == do.job_id if do.job_id is not None else True,
+            DispatchRecord.flow_task_id == do.flow_task_id if do.flow_task_id is not None else True,
+            DispatchRecord.status == do.status if do.status is not None else True,
+            DispatchRecord.created_id == do.created_id if do.created_id is not None else True,
+            DispatchRecord.modify_id == do.modify_id if do.modify_id is not None else True,
+            DispatchRecord.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:DispatchRecord) -> int:
+        query = session.query(DispatchRecord).filter(
+            DispatchRecord.id == do.id if do.id is not None else True,
+            DispatchRecord.job_id == do.job_id if do.job_id is not None else True,
+            DispatchRecord.flow_task_id == do.flow_task_id if do.flow_task_id is not None else True,
+            DispatchRecord.status == do.status if do.status is not None else True,
+            DispatchRecord.created_id == do.created_id if do.created_id is not None else True,
+            DispatchRecord.modify_id == do.modify_id if do.modify_id is not None else True,
+            DispatchRecord.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()
+    

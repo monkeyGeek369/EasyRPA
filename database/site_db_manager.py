@@ -102,7 +102,7 @@ class SiteDbManager:
     def select_sites_by_ids(session,ids:list[int]) -> list[Site]:
         if len(ids) == 0:
             return []
-        return session.query(Site).filter(Site.id.in_(ids))
+        return session.query(Site).filter(Site.id.in_(ids)).all()
 
     @db_session
     def search_site_by_name(session,site_name:str) -> list[Site]:

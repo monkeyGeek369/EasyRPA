@@ -142,3 +142,9 @@ class FlowTaskDBManager:
             session.commit()
             return True
         return False
+    
+    @db_session
+    def get_flow_task_by_ids(session, ids: list[int]) ->list[FlowTask]:
+        if not ids:
+            return []
+        return session.query(FlowTask).filter(FlowTask.id.in_(ids)).all()
