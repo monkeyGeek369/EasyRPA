@@ -6,6 +6,7 @@ from easyrpa.models.base.response_do_base_model import ResponseDoBaseModel
 class JobDetailModel(ResponseDoBaseModel):
     id:int
     job_name:str
+    data_count:int
     cron:str
     flow_code:str
     flow_name:str

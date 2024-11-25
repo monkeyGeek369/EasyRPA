@@ -98,3 +98,53 @@ class DispatchDataDBManager:
             raise ValueError("Job ID or Data Business No cannot be empty")
 
         return session.query(DispatchData).filter(DispatchData.job_id == job_id,DispatchData.data_business_no == data_business_no).first()
+
+    @db_session
+    def select_page_list(session,do:DispatchData,page: int,page_size: int,sorts: dict) -> list[DispatchData]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(DispatchData, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(DispatchData, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(DispatchData, key).desc())
+
+        # 执行查询
+        query = session.query(DispatchData).filter(
+            DispatchData.id == do.id if do.id is not None else True,
+            DispatchData.job_id == do.job_id if do.job_id is not None else True,
+            DispatchData.data_business_no.contains(do.data_business_no) if do.data_business_no is not None else True,
+            DispatchData.data_json.contains(do.data_json) if do.data_json is not None else True,
+            DispatchData.created_id == do.created_id if do.created_id is not None else True,
+            DispatchData.modify_id == do.modify_id if do.modify_id is not None else True,
+            DispatchData.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:DispatchData) -> int:
+        query = session.query(DispatchData).filter(
+            DispatchData.id == do.id if do.id is not None else True,
+            DispatchData.job_id == do.job_id if do.job_id is not None else True,
+            DispatchData.data_business_no.contains(do.data_business_no) if do.data_business_no is not None else True,
+            DispatchData.data_json.contains(do.data_json) if do.data_json is not None else True,
+            DispatchData.created_id == do.created_id if do.created_id is not None else True,
+            DispatchData.modify_id == do.modify_id if do.modify_id is not None else True,
+            DispatchData.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()
+    
+    @db_session
+    def get_count(session,job_id:int) -> int:
+        if number_tool.num_is_empty(job_id):
+            raise ValueError("Job ID cannot be empty")
+
+        return session.query(DispatchData).filter(DispatchData.job_id == job_id).count()

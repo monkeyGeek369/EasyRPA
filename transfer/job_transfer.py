@@ -2,7 +2,7 @@ from models.job.job_detail_model import JobDetailModel
 from models.flow.flow_detail_model import FlowDetailModel
 from models.flow_config.flow_config_detail_model import FlowConfigDetailModel
 from database.models import DispatchJob
-from core import flow_manager_core,flow_config_manager_core,job_manager_core
+from core import flow_manager_core,flow_config_manager_core,job_manager_core,job_data_manager_core
 from easyrpa.enums.job_type_enum import JobTypeEnum
 
 def job2JobDetailModel(data:DispatchJob,flow_map:dict[int,FlowDetailModel],config_map:dict[int,FlowConfigDetailModel],parent_map:dict[int,DispatchJob]) -> JobDetailModel:
@@ -11,11 +11,15 @@ def job2JobDetailModel(data:DispatchJob,flow_map:dict[int,FlowDetailModel],confi
     config = config_map.get(data.flow_config_id) if config_map is not None and data.flow_config_id is not None else None
     parent = parent_map.get(data.parent_job) if parent_map is not None and data.parent_job is not None else None
     job_typs = JobTypeEnum.DATA_PULL if data.job_type == 1 else JobTypeEnum.DATA_PUSH
+
+    # data count
+    data_count = job_data_manager_core.search_count_by_job_id(job_id=data.id)
     
     # transfer
     detail = JobDetailModel(
         id=data.id,
         job_name=data.job_name,
+        data_count=data_count,
         cron=data.cron,
         flow_code=data.flow_code,
         flow_name=flow.flow_name if flow is not None else None,
