@@ -148,3 +148,57 @@ class FlowTaskDBManager:
         if not ids:
             return []
         return session.query(FlowTask).filter(FlowTask.id.in_(ids)).all()
+
+    @db_session
+    def select_page_list(session,do:FlowTask,page: int,page_size: int,sorts: dict) -> list[FlowTask]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(FlowTask, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(FlowTask, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(FlowTask, key).desc())
+
+        # 执行查询
+        query = session.query(FlowTask).filter(
+            FlowTask.id == do.id if do.id is not None else True,
+            FlowTask.site_id == do.site_id if do.site_id is not None else True,
+            FlowTask.flow_id == do.flow_id if do.flow_id is not None else True,
+            FlowTask.biz_no.contains(do.biz_no) if do.biz_no is not None else True,
+            FlowTask.sub_source == do.sub_source if do.sub_source is not None else True,
+            FlowTask.status == do.status if do.status is not None else True,
+            FlowTask.result_code == do.result_code if do.result_code is not None else True,
+            FlowTask.result_message.contains(do.result_message) if do.result_message is not None else True,
+            FlowTask.result_data.contains(do.result_data) if do.result_data is not None else True,
+            FlowTask.created_id == do.created_id if do.created_id is not None else True,
+            FlowTask.modify_id == do.modify_id if do.modify_id is not None else True,
+            FlowTask.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:FlowTask) -> int:
+        query = session.query(FlowTask).filter(
+            FlowTask.id == do.id if do.id is not None else True,
+            FlowTask.site_id == do.site_id if do.site_id is not None else True,
+            FlowTask.flow_id == do.flow_id if do.flow_id is not None else True,
+            FlowTask.biz_no.contains(do.biz_no) if do.biz_no is not None else True,
+            FlowTask.sub_source == do.sub_source if do.sub_source is not None else True,
+            FlowTask.status == do.status if do.status is not None else True,
+            FlowTask.result_code == do.result_code if do.result_code is not None else True,
+            FlowTask.result_message.contains(do.result_message) if do.result_message is not None else True,
+            FlowTask.result_data.contains(do.result_data) if do.result_data is not None else True,
+            FlowTask.created_id == do.created_id if do.created_id is not None else True,
+            FlowTask.modify_id == do.modify_id if do.modify_id is not None else True,
+            FlowTask.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()
+    
