@@ -17,7 +17,6 @@ class TaskDetailModel(ResponseDoBaseModel):
     status:int
     status_name:str
     result_code:int
-    result_code_name:str
     result_message:str
     result_data:str
     retry_number:int

@@ -12,13 +12,17 @@ from easyrpa.enums.log_type_enum import LogTypeEnum
 import json
 from database.models import FlowTask,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_res_dto import FlowTaskExeResDTO
-from easyrpa.tools import str_tools,logs_tool
+from easyrpa.tools import str_tools,logs_tool,number_tool
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 from core.flow_manager_core import get_flow_exe_env_meta_data
 from dataclasses import asdict
 from core.flow_task_exe_result_notify_core import flow_task_exe_result_notify
 from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
 from configuration.app_config_manager import AppConfigManager
+from models.task.task_search_req_model import TaskSearchReqModel
+from models.task.task_search_res_model import TaskSearchResModel
+from core import task_manager_core
+from easyrpa.tools.json_tools import JsonTool
 
 flow_task_bp =  Blueprint('flow_task',__name__)
 
@@ -129,3 +133,40 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
                                                             ,log_type=LogTypeEnum.TASK_RESULT.value[1]
                                                             ,message="""rpa script exe error: {}""".format(str(e))))
     return False
+
+@flow_task_bp.route('/flow/task/search', methods=['POST'])
+@easyrpa_request_wrapper
+def search_flow_tasks(dto:TaskSearchReqModel) -> TaskSearchResModel:
+    # base check
+    if number_tool.num_is_empty(dto.get("page")):
+        raise EasyRpaException("search page is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+    if number_tool.num_is_empty(dto.get("page_size")):
+        raise EasyRpaException("search page size is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+    
+    # dto to do
+    task_obj = FlowTask()
+    task_obj.id = dto.get("id")
+    task_obj.site_id=dto.get("site_id")
+    task_obj.flow_id=dto.get("flow_id")
+    task_obj.biz_no=dto.get("biz_no")
+    task_obj.sub_source=dto.get("sub_source")
+    task_obj.status=dto.get("status")
+    task_obj.result_code=dto.get("result_code")
+    task_obj.result_message=dto.get("result_message")
+    task_obj.result_data=dto.get("result_data")
+    task_obj.is_active = dto.get("is_active")
+
+    # search from db
+    search_result = task_manager_core.search_tasks_by_params(do=task_obj,page=dto.get("page"),page_size=dto.get("page_size"),sorts=dto.get("sorts"))
+    
+    # search count
+    total = task_manager_core.search_count_by_params(do=task_obj)
+
+    # return
+    result = TaskSearchResModel(
+        total=total,
+        data=search_result,
+        sorts=dto.get("sorts")
+    )
+
+    return JsonTool.any_to_dict(result)

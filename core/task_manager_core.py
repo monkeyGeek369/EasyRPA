@@ -3,6 +3,7 @@ from database.models import FlowTask
 from easyrpa.models.base.sort_base_model import SortBaseModel
 from models.task.task_detail_model import TaskDetailModel
 from easyrpa.tools.common_tools import CommonTools
+from transfer.flow_task_transfer import tasks2TaskDetailModels
 
 def get_flow_task_db_by_ids(ids:list[int])->list[FlowTask]:
     if not ids:
@@ -15,7 +16,7 @@ def search_tasks_by_params(do:FlowTask,page: int,page_size: int,sorts: list[Sort
                                                page=CommonTools.initPage(page=page),
                                                page_size=CommonTools.initPageSize(pageSize=page_size),
                                                sorts=CommonTools.initSorts(sorts=sorts)) 
-    result = records2RecordDetailModels(db_result)
+    result = tasks2TaskDetailModels(db_result)
     
     return result
 
