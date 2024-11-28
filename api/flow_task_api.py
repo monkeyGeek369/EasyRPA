@@ -23,6 +23,7 @@ from models.task.task_search_req_model import TaskSearchReqModel
 from models.task.task_search_res_model import TaskSearchResModel
 from core import task_manager_core
 from easyrpa.tools.json_tools import JsonTool
+from models.base.meta_data_base_model import MetaDataBaseModel
 
 flow_task_bp =  Blueprint('flow_task',__name__)
 
@@ -170,3 +171,13 @@ def search_flow_tasks(dto:TaskSearchReqModel) -> TaskSearchResModel:
     )
 
     return JsonTool.any_to_dict(result)
+
+@flow_task_bp.route('/flow/subSource/all', methods=['POST'])
+@easyrpa_request_wrapper
+def get_all_sub_source(param) -> list[MetaDataBaseModel]:
+    return task_manager_core.get_all_source_types()
+
+@flow_task_bp.route('/flow/taskStatus/all', methods=['POST'])
+@easyrpa_request_wrapper
+def get_all_task_status(param) -> list[MetaDataBaseModel]:
+    return task_manager_core.get_all_task_status()
