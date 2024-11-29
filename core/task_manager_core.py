@@ -22,3 +22,8 @@ def search_tasks_by_params(do:FlowTask,page: int,page_size: int,sorts: list[Sort
 
 def search_count_by_params(do:FlowTask) -> int:
     return FlowTaskDBManager.select_count(do=do)
+
+def get_flow_task_by_id(id:int)->TaskDetailModel:
+    detial = FlowTaskDBManager.get_flow_task_by_id(id=id)
+    result = tasks2TaskDetailModels([detial])
+    return result[0]

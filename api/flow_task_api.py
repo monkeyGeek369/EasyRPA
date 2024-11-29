@@ -14,7 +14,6 @@ from database.models import FlowTask,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_res_dto import FlowTaskExeResDTO
 from easyrpa.tools import str_tools,logs_tool,number_tool
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
-from core.flow_manager_core import get_flow_exe_env_meta_data
 from dataclasses import asdict
 from core.flow_task_exe_result_notify_core import flow_task_exe_result_notify
 from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
@@ -23,6 +22,7 @@ from models.task.task_search_req_model import TaskSearchReqModel
 from models.task.task_search_res_model import TaskSearchResModel
 from core import task_manager_core
 from easyrpa.tools.json_tools import JsonTool
+from models.task.task_detail_model import TaskDetailModel
 
 flow_task_bp =  Blueprint('flow_task',__name__)
 
@@ -170,3 +170,8 @@ def search_flow_tasks(dto:TaskSearchReqModel) -> TaskSearchResModel:
     )
 
     return JsonTool.any_to_dict(result)
+
+@flow_task_bp.route('/flow/task/one', methods=['POST'])
+@easyrpa_request_wrapper
+def get_flow_task_by_id(id:int)->TaskDetailModel:
+    return task_manager_core.get_flow_task_by_id(id=id)
