@@ -20,6 +20,8 @@ from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResul
 from configuration.app_config_manager import AppConfigManager
 from models.task.task_search_req_model import TaskSearchReqModel
 from models.task.task_search_res_model import TaskSearchResModel
+from models.task_log.task_log_search_req_model import TaskLogSearchReqModel
+from models.task_log.task_log_search_res_model import TaskLogSearchResModel
 from core import task_manager_core
 from easyrpa.tools.json_tools import JsonTool
 from models.task.task_detail_model import TaskDetailModel
@@ -187,3 +189,32 @@ def get_all_sub_source(param) -> list[MetaDataBaseModel]:
 @easyrpa_request_wrapper
 def get_all_task_status(param) -> list[MetaDataBaseModel]:
     return task_manager_core.get_all_task_status()
+
+@flow_task_bp.route('/flow/task/log/search', methods=['POST'])
+@easyrpa_request_wrapper
+def search_flow_task_logs(dto:TaskLogSearchReqModel) -> TaskLogSearchResModel:
+    # base check
+    if number_tool.num_is_empty(dto.get("page")):
+        raise EasyRpaException("search page is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+    if number_tool.num_is_empty(dto.get("page_size")):
+        raise EasyRpaException("search page size is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+    
+    # dto to do
+    log_obj = FlowTaskLog()
+    log_obj.id = dto.get("id")
+    log_obj.task_id=dto.get("task_id")
+
+    # search from db
+    search_result = task_manager_core.search_task_logs_by_params(do=log_obj,page=dto.get("page"),page_size=dto.get("page_size"),sorts=dto.get("sorts"))
+    
+    # search count
+    total = task_manager_core.search_task_log_count_by_params(do=log_obj)
+
+    # return
+    result = TaskLogSearchResModel(
+        total=total,
+        data=search_result,
+        sorts=dto.get("sorts")
+    )
+
+    return JsonTool.any_to_dict(result)

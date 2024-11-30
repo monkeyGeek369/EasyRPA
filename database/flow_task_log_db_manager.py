@@ -75,3 +75,43 @@ class FlowTaskLogDBManager:
             session.commit()
             return True
         return False
+    
+    @db_session
+    def select_page_list(session,do:FlowTaskLog,page: int,page_size: int,sorts: dict) -> list[FlowTaskLog]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(FlowTaskLog, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(FlowTaskLog, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(FlowTaskLog, key).desc())
+
+        # 执行查询
+        query = session.query(FlowTaskLog).filter(
+            FlowTaskLog.id == do.id if do.id is not None else True,
+            FlowTaskLog.task_id == do.task_id if do.task_id is not None else True,
+            FlowTaskLog.created_id == do.created_id if do.created_id is not None else True,
+            FlowTaskLog.modify_id == do.modify_id if do.modify_id is not None else True,
+            FlowTaskLog.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:FlowTaskLog) -> int:
+        query = session.query(FlowTaskLog).filter(
+            FlowTaskLog.id == do.id if do.id is not None else True,
+            FlowTaskLog.task_id == do.task_id if do.task_id is not None else True,
+            FlowTaskLog.created_id == do.created_id if do.created_id is not None else True,
+            FlowTaskLog.modify_id == do.modify_id if do.modify_id is not None else True,
+            FlowTaskLog.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()
+    

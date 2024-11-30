@@ -1,7 +1,9 @@
 from easyrpa.models.agent_models.flow_task_exe_res_dto import FlowTaskExeResDTO
 from models.task.task_detail_model import TaskDetailModel
-from database.models import FlowTask,Flow
+from models.task_log.task_log_detail_model import TaskLogDetailModel
+from database.models import FlowTask,Flow,FlowTaskLog
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
+from easyrpa.enums.log_type_enum import LogTypeEnum
 from core import site_manager_core,flow_manager_core,flow_config_manager_core,meta_data_item_manager_core
 from configuration.app_config_manager import AppConfigManager
 from models.site.site_detail_model import SiteDetailModel
@@ -80,5 +82,37 @@ def tasks2TaskDetailModels(datas:list[FlowTask]) -> list[TaskDetailModel]:
     task_status_map[FlowTaskStatusEnum.WAIT_EXE.value[1]] = FlowTaskStatusEnum.WAIT_EXE.value[2]
     task_status_map[FlowTaskStatusEnum.EXECUTION.value[1]] = FlowTaskStatusEnum.EXECUTION.value[2]
 
-
     return [task2TaskDetailModel(data=data,sites_map=sites_map,flows_map=flows_map,configs_map=configs_map,source_map=source_map,task_status_map=task_status_map) for data in datas]
+
+def taskLog2TaskLogDetailModel(data:FlowTaskLog,log_type_map:dict[int,str]) -> TaskLogDetailModel:
+    # base data
+    log_type_name = log_type_map.get(data.log_type) if log_type_map is not None and data.log_type is not None else None
+    
+    # transfer
+    detail = TaskLogDetailModel(
+        id=data.id,
+        task_id=data.task_id,
+        log_type=data.log_type,
+        log_type_name=log_type_name,
+        message=data.message,
+        screenshot=data.screenshot,
+        robot_ip=data.robot_ip,
+        created_id=data.created_id,
+        created_time=data.created_time,
+        modify_id=data.modify_id,
+        modify_time=data.modify_time,
+        trace_id=data.trace_id,
+        is_active=data.is_active
+    )
+
+    return detail
+
+def taskLogs2TaskLogDetailModels(datas:list[FlowTaskLog]) -> list[TaskLogDetailModel]:
+    # log type
+    log_type_map = {}
+    log_type_map[LogTypeEnum.TXT.value[1]] = LogTypeEnum.TXT.value[2]
+    log_type_map[LogTypeEnum.SCREENSHOTS.value[1]] = LogTypeEnum.SCREENSHOTS.value[2]
+    log_type_map[LogTypeEnum.TASK_RESULT.value[1]] = LogTypeEnum.TASK_RESULT.value[2]
+    log_type_map[LogTypeEnum.TASK_RESULT_NOTIFY.value[1]] = LogTypeEnum.TASK_RESULT_NOTIFY.value[2]
+
+    return [taskLog2TaskLogDetailModel(data=data,log_type_map=log_type_map) for data in datas]
