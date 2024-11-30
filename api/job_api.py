@@ -19,7 +19,7 @@ job_api_bp =  Blueprint('job_api',__name__)
 
 @job_api_bp.route('/job/exe', methods=['POST'])
 @easyrpa_request_wrapper
-def flow_task_result_handler(job_id:int) -> bool:
+def dispatch_job_exe(job_id:int) -> bool:
     if number_tool.num_is_empty(job_id):
         raise EasyRpaException("job id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,None)
     

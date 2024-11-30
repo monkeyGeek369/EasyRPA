@@ -14,6 +14,9 @@ from job.job_type_impl.pull_job_impl import PullJobImplClass
 from job.job_type_impl.push_job_impl import PushJobImplClass
 
 def init_APSchedulerTool():
+    '''
+    init easyrpa scheduler job
+    '''
     app = AppConfigManager()
 
     if app.get_jobstores_default() != 'MemoryJobStore':
@@ -48,6 +51,9 @@ def init_APSchedulerTool():
     return scheduler_tool
 
 def add_all_jobs_to_scheduler():
+    '''
+    add all jobs to scheduler
+    '''
     # 查询所有启用的job
     dispatch_jobs = DispatchJobDBManager.get_all_active_dispatch_job()
 
@@ -58,9 +64,16 @@ def add_all_jobs_to_scheduler():
 
     # 添加job
     for dispatch_job in dispatch_jobs:
-        add_job_to_scheduler(dispatch_job)
+        try:
+            add_job_to_scheduler(dispatch_job)
+        except Exception as e:
+            logs_tool.log_business_error("add_all_jobs_to_scheduler","add job error",dispatch_job,e)
 
 def add_job_to_scheduler(dispatch_job:DispatchJob):
+    '''
+    add job to scheduler
+    '''
+
     if str_tools.str_is_empty(dispatch_job.cron):
         raise EasyRpaException('cron cannot be empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None)
 
@@ -84,9 +97,64 @@ def add_job_to_scheduler(dispatch_job:DispatchJob):
                       kwargs={'job_id':dispatch_job.id})
 
 def get_job_type_impl(job_type:int) -> JobTypeAbstractClass:
+    '''
+    get job type impl
+    '''
     if job_type == JobTypeEnum.DATA_PULL.value[1]:
         return PullJobImplClass()
     elif job_type == JobTypeEnum.DATA_PUSH.value[1]:
         return PushJobImplClass()
     else:
         raise EasyRpaException('job type not support',EasyRpaExceptionCodeEnum.SYSTEM_NOT_IMPLEMENT.value[1],None)
+    
+def get_job_from_scheduler_by_id(job_id:int):
+    '''
+    get scheduler job by dispatch job id from scheduler
+    '''
+    # get scheduler
+    scheduler = APSchedulerTool()
+
+    # get all scheduler jobs
+    scheduler_jobs = scheduler.get_all_jobs()
+    if scheduler_jobs is None or len(scheduler_jobs) == 0:
+        return None
+
+    for job in scheduler_jobs:
+        if job is not None and job.kwargs is not None and job.kwargs.get('job_id') is not None:
+            if job.kwargs.get('job_id') == job_id:
+                return job
+
+def delete_job_from_scheduler_by_id(job_id:int):
+    '''
+    delete job by id
+    '''
+    # get scheduler job
+    job = get_job_from_scheduler_by_id(job_id=job_id)
+
+    if job is None:
+        return
+    
+    scheduler_job_id = ''
+    if job is not None and job.id is not None:
+        scheduler_job_id = job.id
+    else:
+        return
+
+    # delete job
+    scheduler = APSchedulerTool()
+    scheduler.delete_job(job_id=scheduler_job_id)
+
+def update_scheduler_job_by_id(dispatch_job:DispatchJob):
+    '''
+    update scheduler job by dispatch job id
+    '''
+    if dispatch_job is None or dispatch_job.id is None:
+        return
+        
+    # delete scheduler job
+    delete_job_from_scheduler_by_id(job_id=dispatch_job.id)
+
+    # add scheduler job
+    add_job_to_scheduler(dispatch_job=dispatch_job)
+
+

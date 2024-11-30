@@ -9,6 +9,7 @@ from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from models.job.job_type_model import JobTypeModel
 from easyrpa.enums.job_type_enum import JobTypeEnum
+from job import dispatch_job_manager
 
 
 def search_jobs_by_params(do:DispatchJob,page: int,page_size: int,sorts: list[SortBaseModel]) -> list[JobDetailModel]:
@@ -63,6 +64,7 @@ def add_job(job_name:str,cron:str,flow_code:str,flow_config_id:int,job_type:int,
     result = DispatchJobDBManager.create_dispatch_job(dispatch_job=db)
     if result is None:
         raise EasyRpaException("add job failed",EasyRpaExceptionCodeEnum.CREATE_FAILED.value[1],None,None)
+
     return result.id
 
 def modify_job(id:int,job_name:str,cron:str,flow_code:str,flow_config_id:int,job_type:int,parent_job:int,current_data_id:int,last_record_id:int,is_active:bool) -> bool:
@@ -85,14 +87,25 @@ def modify_job(id:int,job_name:str,cron:str,flow_code:str,flow_config_id:int,job
         raise EasyRpaException("id cannot be empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,id)
     base_check(job=db)
 
+    # update
     DispatchJobDBManager.update_dispatch_job(data=db)
+
+    # update schedule job
+    if is_active is not None and is_active:
+        dispatch_job = DispatchJobDBManager.get_dispatch_job_by_id(id=id)
+        dispatch_job_manager.update_scheduler_job_by_id(dispatch_job=dispatch_job)
+    else:
+        dispatch_job_manager.delete_job_from_scheduler_by_id(job_id=id)
+
     return True
 
 def delete_job(id:int) -> bool:
     if number_tool.num_is_empty(id):
         raise EasyRpaException("job id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,id)
     
-    return DispatchJobDBManager.delete_dispatch_job(id=id)
+    DispatchJobDBManager.delete_dispatch_job(id=id)
+    dispatch_job_manager.delete_job_from_scheduler_by_id(job_id=id)
+    return True
 
 def get_job_type() -> list[JobTypeModel]:
     return [JobTypeModel(id=job_type.value[1],des=job_type.value[2]) for job_type in JobTypeEnum]

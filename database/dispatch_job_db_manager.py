@@ -41,6 +41,7 @@ class DispatchJobDBManager:
             raise ValueError("Job type cannot be empty")
         
         create_common_fields(dispatch_job)
+        dispatch_job.is_active = False
         session.add(dispatch_job)
         session.commit()
         session.refresh(dispatch_job)
