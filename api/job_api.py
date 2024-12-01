@@ -1,4 +1,4 @@
-from flask import Blueprint,request
+from flask import Blueprint
 from easyrpa.tools import str_tools,logs_tool,number_tool
 from easyrpa.tools.request_tool import easyrpa_request_wrapper
 from easyrpa.models.easy_rpa_exception import EasyRpaException
