@@ -8,7 +8,6 @@ from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from database.models import DispatchJob
 from easyrpa.tools import str_tools,logs_tool
 from easyrpa.enums.job_type_enum import JobTypeEnum
-from configuration.app_config_manager import AppConfigManager
 from job.job_type_impl.job_type_abstract import JobTypeAbstractClass
 from job.job_type_impl.pull_job_impl import PullJobImplClass
 from job.job_type_impl.push_job_impl import PushJobImplClass
