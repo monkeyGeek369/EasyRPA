@@ -1,11 +1,12 @@
 from database.db_session import db_session,update_common_fields,create_common_fields
 from database.models import RobotStatu
+from easyrpa.tools import str_tools
 
 
 
 class RobotStatuDBManager:
     @db_session
-    def get_all_robot_statu(session):
+    def get_all_robot_statu(session)->list[RobotStatu]:
         return session.query(RobotStatu).all()
 
     @db_session
@@ -14,10 +15,6 @@ class RobotStatuDBManager:
 
     @db_session
     def create_robot_statu(session, robot_statu:RobotStatu):
-        # robot_statu不可以为空
-        if not robot_statu:
-            raise ValueError("RobotStatu cannot be empty")
-        
         # robot_ip不可以为空
         if not robot_statu.robot_ip:
             raise ValueError("Robot ip cannot be empty")
@@ -73,3 +70,9 @@ class RobotStatuDBManager:
             session.commit()
             return True
         return False
+    
+    @db_session
+    def search_robot_statu_by_code(session, robot_code:str) -> RobotStatu:
+        if str_tools.str_is_empty(robot_code):
+            return None
+        return session.query(RobotStatu).filter(RobotStatu.robot_code == robot_code).first()
