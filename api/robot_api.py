@@ -7,6 +7,7 @@ from easyrpa.tools.json_tools import JsonTool
 from easyrpa.models.agent_models.heartbeat_check_req_dto import HeartbeatCheckReqDTO
 from easyrpa.models.agent_models.robot_log_report_req_dto import RobotLogReportReqDTO
 from core import robot_manager_core
+from easyrpa.enums.robot_status_type_enum import RobotStatusTypeEnum
 
 
 robot_api_bp =  Blueprint('robot_api',__name__)
@@ -34,9 +35,29 @@ def heartbeat_check(dto:HeartbeatCheckReqDTO) -> bool:
 @robot_api_bp.route('/robot/delete', methods=['POST'])
 @easyrpa_request_wrapper
 def delete_robot(id:int) -> bool:
-    pass
+    # delete robot and robot log
+    robot_manager_core.delete_robot(id=id)
+    return True
 
 @robot_api_bp.route('/robot/log/report', methods=['POST'])
 @easyrpa_request_wrapper
 def robot_log_report(dto:RobotLogReportReqDTO) -> bool:
-    pass
+    # base check
+    if str_tools.str_is_empty(dto.robot_code):
+        raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+    if number_tool.num_is_empty(dto.log_type):
+        raise EasyRpaException("log type is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+
+    # search robot by robot code
+    robot = robot_manager_core.get_robot_by_code(robot_code=dto.robot_code)
+    if robot is None:
+        raise EasyRpaException("robot not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+
+    # update robot task
+    if number_tool.num_is_not_empty(dto.task_id) and robot.current_task_id != dto.task_id:
+        robot.current_task_id = dto.task_id
+        robot.status = RobotStatusTypeEnum.RUNNING.value[1]
+
+    # insert robot log
+    robot_manager_core.add_robot_log(robot_id=robot.id,task_id=dto.task_id,log_type=dto.log_type,message=dto.message)
+    return True

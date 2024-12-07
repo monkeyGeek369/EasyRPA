@@ -17,10 +17,6 @@ class RobotLogDBManager:
         if not robot_log.robot_id:
             raise ValueError("Robot ID cannot be empty")
         
-        # task_id不可以为空
-        if not robot_log.task_id:
-            raise ValueError("Task ID cannot be empty")
-        
         # log_type不可以为空
         if not robot_log.log_type:
             raise ValueError("Log type cannot be empty")
@@ -77,3 +73,9 @@ class RobotLogDBManager:
             session.commit()
             return True
         return False
+    
+    @db_session
+    def delete_robot_log_by_robot_id(session, robot_id:int):
+        session.query(RobotLog).filter(RobotLog.robot_id == robot_id).delete()
+        session.commit()
+        return True

@@ -4,6 +4,7 @@ from database.flow_task_log_db_manager import FlowTaskLogDBManager
 from database.models import FlowTaskLog
 from easyrpa.enums.log_type_enum import LogTypeEnum
 from easyrpa.tools import str_tools,number_tool
+from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 
 
 class FlowTaskDBManager:
@@ -202,3 +203,6 @@ class FlowTaskDBManager:
             )
         return query.count()
     
+    @db_session
+    def get_all_waiting_tasks(session) -> list[FlowTask]:
+        return session.query(FlowTask).filter(FlowTask.status == FlowTaskStatusEnum.WAIT_EXE.value[1]).all()

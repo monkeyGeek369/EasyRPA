@@ -22,7 +22,7 @@ from models.task.task_search_req_model import TaskSearchReqModel
 from models.task.task_search_res_model import TaskSearchResModel
 from models.task_log.task_log_search_req_model import TaskLogSearchReqModel
 from models.task_log.task_log_search_res_model import TaskLogSearchResModel
-from core import task_manager_core
+from core import task_manager_core,task_dispatch_core
 from easyrpa.tools.json_tools import JsonTool
 from models.task.task_detail_model import TaskDetailModel
 from models.base.meta_data_base_model import MetaDataBaseModel
@@ -74,7 +74,7 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
         rpa_result_message = json.dumps(asdict(exe_result),ensure_ascii=False)
 
         # 更新任务+记录日志
-        FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id,task_result_message=rpa_result_message))
+        flow_task = FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id,task_result_message=rpa_result_message))
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id= flow_task.id
                                                             ,log_type=LogTypeEnum.TASK_RESULT.value[1]
                                                             ,message="""rpa result: {}""".format(rpa_result_message)))
@@ -96,7 +96,7 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
         # 更新任务+记录日志
         result_status = FlowTaskStatusEnum.SUCCESS.value[1] if dict_response_result.status else FlowTaskStatusEnum.FAIL.value[1]
         logs_tool.log_business_info(title="flow_task_result_handler",message="result_status",data=result_status)
-        FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id
+        flow_task = FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id
                                                     ,result_code = dict_response_result.code
                                                     ,result_message = dict_response_result.error_msg
                                                     ,result_data = dict_response_result.result
@@ -131,11 +131,14 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
     except Exception as e:
         logs_tool.log_business_error(title="flow_task_result_handler",message="flow task result handler error",data=dto,exc_info=e)
         # 更新任务+记录日志
-        FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id
+        flow_task = FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id
                                                     ,status=FlowTaskStatusEnum.FAIL.value[1]))
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id= flow_task.id
                                                             ,log_type=LogTypeEnum.TASK_RESULT.value[1]
                                                             ,message="""rpa script exe error: {}""".format(str(e))))
+    finally:
+        # task retry
+        task_dispatch_core.task_retry(task=flow_task)
     return False
 
 @flow_task_bp.route('/flow/task/search', methods=['POST'])

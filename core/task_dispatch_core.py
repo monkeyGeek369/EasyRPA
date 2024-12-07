@@ -1,19 +1,43 @@
 from database.models import FlowTask,Flow,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_req_dto import FlowTaskExeReqDTO
-import requests
+import requests,random,datetime,pytz
 from database.flow_task_db_manager import FlowTaskDBManager
 from database.flow_task_log_db_manager import FlowTaskLogDBManager
+from database.flow_db_manager import FlowDbManager
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 from easyrpa.enums.log_type_enum import LogTypeEnum
-from easyrpa.tools import request_tool
+from easyrpa.tools import request_tool,str_tools,local_store_tools,number_tool
+from database.robot_statu_db_manager import RobotStatuDBManager
+from easyrpa.models.easy_rpa_exception import EasyRpaException
+from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
+from core import robot_manager_core,task_manager_core,flow_manager_core
+from easyrpa.enums.robot_status_type_enum import RobotStatusTypeEnum
 
 
 def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str):
-     # 获取可用机器人-todo：先简单实现
-     url = "http://192.168.2.178:5006/flow/task/async/exe"
-
      try:
-        # 构造请求参数
+        # get leisure robot
+        leisure_robot = None
+        robots = RobotStatuDBManager.get_leisure_robot_statu()
+        if robots is None or len(robots) == 0:
+            return
+        elif len(robots) == 1:
+            leisure_robot = robots[0]
+        else:
+            # get random robot
+            random_index = random.uniform(0, len(robots) - 1)
+            leisure_robot = robots[int(random_index)]
+        
+        if robot_is_lock(robot_code=leisure_robot.robot_code):
+            return
+        else:
+            robot_lock(robot_code=leisure_robot.robot_code)
+            # update robot
+            leisure_robot.status = RobotStatusTypeEnum.RUNNING.value[1]
+            leisure_robot.current_task_id = flow_task.id
+            robot_manager_core.update_robot(robot_id=leisure_robot.id,robot_code=leisure_robot,robot_ip=leisure_robot.robot_ip,port=leisure_robot.port,current_task_id=flow_task.id)
+            
+        # build params
         flow_task_exe_req_dto = FlowTaskExeReqDTO(task_id=flow_task.id
                                                   ,site_id=flow_task.site_id
                                                   ,flow_id=flow_task.flow_id
@@ -24,34 +48,142 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str):
                                                   ,flow_standard_message=flow_task.flow_standard_message
                                                   ,flow_exe_script=flow.flow_exe_script
                                                   ,sub_source=flow_task.sub_source)
-        
-        # 将任务执行请求以post方式发送到机器人
+        # build url
+        url = f"http://{leisure_robot.robot_ip}:{leisure_robot.port}/flow/task/async/exe"
+
+        # add task log
         req_json = request_tool.request_base_model_json_builder(flow_task_exe_req_dto)
+        if flow_task.retry_number is None or flow_task.retry_number <= 0:
+            FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"adapt script message:{req_json}。"))
+        
+        # send request
         response = requests.post(url, json=req_json)
         
-        # 请求数据记录
-        FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"adapt script message:{req_json}。"))
-
-        # 调度结果处理
-        if response.status_code == 200:
-            # 任务状态修改为执行中
+        # response handler
+        if response.data == True:
+            # update task status
             update_flow_task = FlowTask(id=flow_task.id,status=FlowTaskStatusEnum.EXECUTION.value[1])
             FlowTaskDBManager.update_flow_task(update_flow_task)
 
-            # 记录任务日志
-            FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"流程任务调度成功，已经成功发送至机器人[{url}]。"))
+            # add task log
+            FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"task dispatch success, sended to robot[{url}]。"))
         else:
-            # 任务状态-执行失败
-            update_flow_task = FlowTask(id=flow_task.id,status=FlowTaskStatusEnum.FAIL.value[1])
+            # update task status
+            update_flow_task = FlowTask(id=flow_task.id,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
             FlowTaskDBManager.update_flow_task(update_flow_task)
 
-            # 记录任务日志
-            FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=response.text))
+            # add task log
+            FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"task dispatch error,robot[{url}] is busy。"))
      except Exception as e:
-            # 任务状态-执行失败
+            # update task status error
             update_flow_task = FlowTask(id=flow_task.id,status=FlowTaskStatusEnum.FAIL.value[1])
             FlowTaskDBManager.update_flow_task(update_flow_task)
 
-            # 记录任务日志
-            FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=str(e)))
+            # add task error log
+            FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message="task dispatch error,message:" + str(e)))
+
+     finally:
+        if leisure_robot is not None:
+            robot_unlock(robot_code=leisure_robot.robot_code)
      
+def robot_lock(robot_code:str):
+    if str_tools.str_is_empty(robot_code):
+        raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
+    
+    locked_robots = local_store_tools.get_data(key="locked_robots")
+
+    if locked_robots is None:
+        local_store_tools.add_data(key="locked_robots",value = [robot_code])
+    else:
+        if robot_code not in locked_robots:
+            locked_robots.append(robot_code)
+            local_store_tools.update_data(key="locked_robots",value = locked_robots)
+
+def robot_unlock(robot_code:str):
+    if str_tools.str_is_empty(robot_code):
+        raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
+    
+    locked_robots = local_store_tools.get_data(key="locked_robots")
+
+    if locked_robots is not None:
+        if robot_code in locked_robots:
+            locked_robots.remove(robot_code)
+            local_store_tools.update_data(key="locked_robots",value = locked_robots)
+
+def robot_is_lock(robot_code:str) -> bool:
+    if str_tools.str_is_empty(robot_code):
+        raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
+    
+    locked_robots = local_store_tools.get_data(key="locked_robots")
+
+    if locked_robots is not None:
+        if robot_code in locked_robots:
+            return True
+    return False
+
+def check_waiting_task():
+    import time
+    while True:
+        # wait 3 minutes
+        time.sleep(3*60)
+
+        # get all waiting tasks
+        waiting_tasks = task_manager_core.search_waiting_tasks()
+        if waiting_tasks is None or len(waiting_tasks) == 0:
+            continue
+        else:
+            for waiting_task in waiting_tasks:
+                task_retry(waiting_task)
+
+
+def task_retry(task:FlowTask):
+    try:
+        # base check
+        if number_tool.num_is_empty(task.flow_id):
+            raise EasyRpaException("flow id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.flow_id)
+
+        # task status
+        if task.status == FlowTaskStatusEnum.SUCCESS.value[1]:
+            return
+
+        # search flow
+        flow = FlowDbManager.get_flow_by_id(flow_id=task.flow_id)
+        if flow is None:
+            raise EasyRpaException("flow not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.flow_id)
+        
+        # retry code
+        if str_tools.str_is_empty(task.result_code):
+            raise EasyRpaException("retry code is empty, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        retry_codes = task.result_code.split(",")
+        if str_tools.str_is_not_empty(task.result_code) and task.result_code not in retry_codes:
+            raise EasyRpaException("retry code error, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+
+        # max retry number
+        if number_tool.num_is_empty(flow.max_retry_number):
+            raise EasyRpaException("flow max retry number is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        if number_tool.num_is_not_empty(task.retry_number) and task.retry_number >= flow.max_retry_number:
+            raise EasyRpaException("task retry number is over max retry number",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+
+        # max retry time
+        if number_tool.num_is_empty(flow.max_exe_time):
+            raise EasyRpaException("flow max exe time is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        current_time = int(datetime.datetime.now().timestamp())
+        created_time = int(task.created_time.timestamp())
+        time_span = current_time - created_time
+        if time_span > flow.max_exe_time:
+            raise EasyRpaException("task exe time is over max exe time",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+
+        # search flow exe env
+        rpa_exe_env = flow_manager_core.get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
+
+        # dispatch task
+        flow_task_dispatch(flow=flow,flow_task=task,flow_exe_env=rpa_exe_env)
+
+        # update task
+        update_flow_task = FlowTask(id=task.id,retry_number=task.retry_number+1,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
+        FlowTaskDBManager.update_flow_task(update_flow_task)
+    except Exception as e:
+        update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.FAIL.value[1])
+        FlowTaskDBManager.update_flow_task(update_flow_task)
+        FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=task.id,log_type=LogTypeEnum.TXT.value[1],message="task dispatch error , message: " + str(e)))
+        

@@ -62,3 +62,6 @@ def search_task_logs_by_params(do:FlowTaskLog,page: int,page_size: int,sorts: li
 
 def search_task_log_count_by_params(do:FlowTaskLog) -> int:
     return FlowTaskLogDBManager.select_count(do=do)
+
+def search_waiting_tasks() -> list[FlowTask]:
+    return FlowTaskDBManager.get_all_waiting_tasks()

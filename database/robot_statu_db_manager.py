@@ -1,6 +1,7 @@
 from database.db_session import db_session,update_common_fields,create_common_fields
 from database.models import RobotStatu
 from easyrpa.tools import str_tools
+from easyrpa.enums.robot_status_type_enum import RobotStatusTypeEnum
 
 
 
@@ -8,6 +9,10 @@ class RobotStatuDBManager:
     @db_session
     def get_all_robot_statu(session)->list[RobotStatu]:
         return session.query(RobotStatu).all()
+    
+    @db_session
+    def get_leisure_robot_statu(session) -> list[RobotStatu]:
+        return session.query(RobotStatu).filter(RobotStatu.status == RobotStatusTypeEnum.LEISURE.value[1]).all()
 
     @db_session
     def get_robot_statu_by_id(session, id):
