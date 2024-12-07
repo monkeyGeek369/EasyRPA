@@ -27,7 +27,7 @@ def get_robot_by_code(robot_code:str) -> RobotStatu:
     robot = get_robot_from_store(key=robot_code)
     if robot is not None:
         return robot
-    robot = RobotStatuDBManager.search_robot_statu_by_code(robot_code==robot_code)
+    robot = RobotStatuDBManager.search_robot_statu_by_code(robot_code=robot_code)
     refresh_robot_store(add_key=robot_code,delete_key=None,value=robot)
     return robot
 
@@ -48,12 +48,8 @@ def update_robot(robot_id:int,robot_code:str,robot_ip:str,port:int,current_task_
     RobotStatuDBManager.update_robot_statu(data=robot)
     refresh_robot_store(add_key=robot_code,delete_key=None,value=robot)
 
-def closed_robot_check():
-    import time
+def closed_robot_check(params):
     while True:
-        # wait 10 seconds
-        time.sleep(10)
-
         # get all robots
         robots = RobotStatuDBManager.get_all_robot_statu()
         if robots is None or len(robots) == 0:
@@ -89,6 +85,10 @@ def closed_robot_check():
                 robot.status = RobotStatusTypeEnum.CLOSED.value[1]
                 RobotStatuDBManager.update_robot_statu(data=robot)
                 refresh_robot_store(add_key=robot.robot_code,delete_key=None,value=robot)
+        
+        import time
+        # wait 10 seconds
+        time.sleep(10)
     
 def delete_robot(robot_code:str):
     if str_tools.str_is_empty(robot_code):

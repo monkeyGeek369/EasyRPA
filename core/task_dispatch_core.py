@@ -121,12 +121,8 @@ def robot_is_lock(robot_code:str) -> bool:
             return True
     return False
 
-def check_waiting_task():
-    import time
+def check_waiting_task(params):
     while True:
-        # wait 3 minutes
-        time.sleep(3*60)
-
         # get all waiting tasks
         waiting_tasks = task_manager_core.search_waiting_tasks()
         if waiting_tasks is None or len(waiting_tasks) == 0:
@@ -134,6 +130,10 @@ def check_waiting_task():
         else:
             for waiting_task in waiting_tasks:
                 task_retry(waiting_task)
+        
+        import time
+        # wait 3 minutes
+        time.sleep(3*60)
 
 
 def task_retry(task:FlowTask):

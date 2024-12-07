@@ -60,6 +60,10 @@ class RobotStatuDBManager:
                 if session.query(RobotStatu).filter(RobotStatu.robot_ip == data.robot_ip).filter(RobotStatu.id != data.id).first():
                     raise ValueError("Robot ip already exists")
                 robot_statu.robot_ip = data.robot_ip
+            
+            robot_statu.status = data.status
+            robot_statu.port = data.port
+            robot_statu.current_task_id = data.current_task_id
 
             update_common_fields(robot_statu)
             session.commit()
