@@ -85,3 +85,50 @@ class RobotStatuDBManager:
         if str_tools.str_is_empty(robot_code):
             return None
         return session.query(RobotStatu).filter(RobotStatu.robot_code == robot_code).first()
+    
+    
+    @db_session
+    def select_page_list(session,do:RobotStatu,page: int,page_size: int,sorts: dict) -> list[RobotStatu]:
+        # 构造排序条件
+        sort_conditions = []
+        if sorts is None or len(sorts) == 0:
+            sort_conditions.append(getattr(RobotStatu, 'id').desc())
+        else:
+            for key, value in sorts.items():
+                if value == 'asc':
+                    sort_conditions.append(getattr(RobotStatu, key).asc())
+                elif value == 'desc':
+                    sort_conditions.append(getattr(RobotStatu, key).desc())
+
+        # 执行查询
+        query = session.query(RobotStatu).filter(
+            RobotStatu.id == do.id if do.id is not None else True,
+            RobotStatu.robot_code.contains(do.robot_code) if do.robot_code is not None else True,
+            RobotStatu.robot_ip.contains(do.robot_ip) if do.robot_ip is not None else True,
+            RobotStatu.status == do.status if do.status is not None else True,
+            RobotStatu.current_task_id == do.current_task_id if do.current_task_id is not None else True,
+            RobotStatu.created_id == do.created_id if do.created_id is not None else True,
+            RobotStatu.modify_id == do.modify_id if do.modify_id is not None else True,
+            RobotStatu.is_active == do.is_active if do.is_active is not None else True
+            )
+        if len(sort_conditions) > 0:
+            query = query.order_by(*sort_conditions)
+        query = query.limit(page_size).offset((page - 1) * page_size)
+
+        # 返回结果
+        return query.all()
+    
+    @db_session
+    def select_count(session,do:RobotStatu) -> int:
+        query = session.query(RobotStatu).filter(
+            RobotStatu.id == do.id if do.id is not None else True,
+            RobotStatu.robot_code.contains(do.robot_code) if do.robot_code is not None else True,
+            RobotStatu.robot_ip.contains(do.robot_ip) if do.robot_ip is not None else True,
+            RobotStatu.status == do.status if do.status is not None else True,
+            RobotStatu.current_task_id == do.current_task_id if do.current_task_id is not None else True,
+            RobotStatu.created_id == do.created_id if do.created_id is not None else True,
+            RobotStatu.modify_id == do.modify_id if do.modify_id is not None else True,
+            RobotStatu.is_active == do.is_active if do.is_active is not None else True
+            )
+        return query.count()
+    

@@ -3,7 +3,14 @@ from database.robot_log_db_manager import RobotLogDBManager
 from database.models import RobotStatu,RobotLog
 from easyrpa.enums.robot_status_type_enum import RobotStatusTypeEnum
 from easyrpa.tools import number_tool,local_store_tools,str_tools,request_tool
+from easyrpa.models.base.sort_base_model import SortBaseModel
+from models.robot.robot_detail_model import RobotDetailModel
+from models.robot.robot_log_detail_model import RobotLogDetailModel
 from easyrpa.tools.json_tools import JsonTool
+from easyrpa.tools.common_tools import CommonTools
+from transfer import robot_transfer
+from easyrpa.models.easy_rpa_exception import EasyRpaException
+from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 import requests
 
 def create_robot(robot_code:str,robot_ip:str,port:int,current_task_id:int):
@@ -130,4 +137,34 @@ def refresh_robot_store(add_key:str,value,delete_key:str):
 
 def get_robot_from_store(key:str) -> RobotStatu:
     return local_store_tools.get_data(key=key)
+
+def search_robots_by_params(do:RobotStatu,page: int,page_size: int,sorts: list[SortBaseModel]) -> list[RobotDetailModel]:
+    # search db
+    db_result = RobotStatuDBManager.select_page_list(do=do,
+                                               page=CommonTools.initPage(page=page),
+                                               page_size=CommonTools.initPageSize(pageSize=page_size),
+                                               sorts=CommonTools.initSorts(sorts=sorts)) 
+    result = robot_transfer.robots2RobotDetailModels(db_result)
+    return result
+
+def search_robot_count_by_params(do:RobotStatu) -> int:
+    return RobotStatuDBManager.select_count(do=do)
+
+def search_robot_logs_by_params(do:RobotLog,page: int,page_size: int,sorts: list[SortBaseModel]) -> list[RobotLogDetailModel]:
+    # search db
+    db_result = RobotLogDBManager.select_page_list(do=do,
+                                               page=CommonTools.initPage(page=page),
+                                               page_size=CommonTools.initPageSize(pageSize=page_size),
+                                               sorts=CommonTools.initSorts(sorts=sorts)) 
+    result = robot_transfer.robotLogs2RobotLogDetailModels(db_result)
+    return result
+
+def search_robot_log_count_by_params(do:RobotLog) -> int:
+    return RobotLogDBManager.select_count(do=do)
+
+def delete_robot_log(robot_id:int) -> bool:
+    if number_tool.num_is_empty(robot_id):
+        raise EasyRpaException("robot id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_id)
+    
+    return RobotLogDBManager.delete_robot_log_by_robot_id(robot_id=robot_id)
 
