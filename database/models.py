@@ -73,7 +73,7 @@ class Flow(Base):
     flow_exe_env = Column(Integer, nullable=False, comment='流程执行环境（1、playwright/2、selenium')
     flow_biz_type = Column(Integer, nullable=False, comment='流程业务类型（1、数据爬取/2、数据推送）')
     max_retry_number = Column(Integer, comment='最大重试次数')
-    max_exe_time = Column(BigInteger, comment='最大执行时间（毫秒）')
+    max_exe_time = Column(BigInteger, comment='最大执行时间（秒）')
     retry_code = Column(String(255), comment='重试code（逗号分隔）')
     request_check_script = Column(LONGTEXT, comment='请求数据校验脚本')
     request_adapt_script = Column(LONGTEXT, comment='请求数据适配脚本')
