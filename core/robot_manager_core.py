@@ -2,7 +2,8 @@ from database.robot_statu_db_manager import RobotStatuDBManager
 from database.robot_log_db_manager import RobotLogDBManager
 from database.models import RobotStatu,RobotLog
 from easyrpa.enums.robot_status_type_enum import RobotStatusTypeEnum
-from easyrpa.tools import number_tool,local_store_tools,str_tools
+from easyrpa.tools import number_tool,local_store_tools,str_tools,request_tool
+from easyrpa.tools.json_tools import JsonTool
 import requests
 
 def create_robot(robot_code:str,robot_ip:str,port:int,current_task_id:int):
@@ -50,6 +51,10 @@ def update_robot(robot_id:int,robot_code:str,robot_ip:str,port:int,current_task_
 
 def closed_robot_check(params):
     while True:
+        import time
+        # wait 10 seconds
+        time.sleep(10)
+
         # get all robots
         robots = RobotStatuDBManager.get_all_robot_statu()
         if robots is None or len(robots) == 0:
@@ -75,9 +80,14 @@ def closed_robot_check(params):
             url = f"http://{robot.robot_ip}:{robot.port}/health/test"
 
             try:
-                response = requests.get(url)
-                if response is None or response.code != 200:
+                req_json = request_tool.request_base_model_json_builder("test")
+                response = requests.get(url,json=req_json)
+                if response is None:
                     is_closed = True
+                else:
+                    result = JsonTool.any_to_dict(response.text)
+                    if result.get("code") != 200:
+                        is_closed = True
             except:
                 is_closed = True
 
@@ -85,10 +95,6 @@ def closed_robot_check(params):
                 robot.status = RobotStatusTypeEnum.CLOSED.value[1]
                 RobotStatuDBManager.update_robot_statu(data=robot)
                 refresh_robot_store(add_key=robot.robot_code,delete_key=None,value=robot)
-        
-        import time
-        # wait 10 seconds
-        time.sleep(10)
     
 def delete_robot(robot_code:str):
     if str_tools.str_is_empty(robot_code):

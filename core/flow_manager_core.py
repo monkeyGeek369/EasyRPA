@@ -54,6 +54,8 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         
         # 获取执行环境元数据
         rpa_exe_env = get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
+        if rpa_exe_env is None or rpa_exe_env.name_en is None:
+            raise EasyRpaException("""flow {} not found exe env""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
         app = AppConfigManager()
         conda_env = app.get_console_default_conda_env()
 
@@ -72,7 +74,7 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         flow_task.request_standard_message = dto.request_standard_message
         flow_task.flow_standard_message = json.dumps(dict_adapter_result)
         flow_task.flow_config_id = flow_configuration.id
-        FlowTaskDBManager.create_flow_task(flow_task)
+        flow_task = FlowTaskDBManager.create_flow_task(flow_task)
 
         # 流程任务分发
         flow_task_dispatch(flow,flow_task,flow_exe_env=rpa_exe_env.name_en)

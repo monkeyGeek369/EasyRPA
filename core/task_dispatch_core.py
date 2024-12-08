@@ -12,6 +12,7 @@ from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from core import robot_manager_core,task_manager_core,flow_manager_core
 from easyrpa.enums.robot_status_type_enum import RobotStatusTypeEnum
+from easyrpa.tools.json_tools import JsonTool
 
 
 def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str):
@@ -35,7 +36,7 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str):
             # update robot
             leisure_robot.status = RobotStatusTypeEnum.RUNNING.value[1]
             leisure_robot.current_task_id = flow_task.id
-            robot_manager_core.update_robot(robot_id=leisure_robot.id,robot_code=leisure_robot,robot_ip=leisure_robot.robot_ip,port=leisure_robot.port,current_task_id=flow_task.id)
+            robot_manager_core.update_robot(robot_id=leisure_robot.id,robot_code=leisure_robot.robot_code,robot_ip=leisure_robot.robot_ip,port=leisure_robot.port,current_task_id=flow_task.id)
             
         # build params
         flow_task_exe_req_dto = FlowTaskExeReqDTO(task_id=flow_task.id
@@ -58,9 +59,14 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str):
         
         # send request
         response = requests.post(url, json=req_json)
+        is_success = False
+        if response is not None and response.status_code == 200:
+            result_txt = JsonTool.any_to_dict(response.text)
+            if result_txt.get("code") == 200 and result_txt.get("data") == True:
+                is_success = True
         
         # response handler
-        if response.data == True:
+        if is_success:
             # update task status
             update_flow_task = FlowTask(id=flow_task.id,status=FlowTaskStatusEnum.EXECUTION.value[1])
             FlowTaskDBManager.update_flow_task(update_flow_task)
@@ -123,6 +129,10 @@ def robot_is_lock(robot_code:str) -> bool:
 
 def check_waiting_task(params):
     while True:
+        import time
+        # wait one minutes
+        time.sleep(60)
+
         # get all waiting tasks
         waiting_tasks = task_manager_core.search_waiting_tasks()
         if waiting_tasks is None or len(waiting_tasks) == 0:
@@ -130,10 +140,6 @@ def check_waiting_task(params):
         else:
             for waiting_task in waiting_tasks:
                 task_retry(waiting_task)
-        
-        import time
-        # wait 3 minutes
-        time.sleep(3*60)
 
 
 def task_retry(task:FlowTask):
@@ -152,9 +158,9 @@ def task_retry(task:FlowTask):
             raise EasyRpaException("flow not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.flow_id)
         
         # retry code
-        if str_tools.str_is_empty(task.result_code):
-            raise EasyRpaException("retry code is empty, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
-        retry_codes = task.result_code.split(",")
+        if str_tools.str_is_empty(flow.retry_code):
+            raise EasyRpaException("flow retry code is empty, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        retry_codes = flow.retry_code.split(",")
         if str_tools.str_is_not_empty(task.result_code) and task.result_code not in retry_codes:
             raise EasyRpaException("retry code error, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
@@ -175,15 +181,17 @@ def task_retry(task:FlowTask):
 
         # search flow exe env
         rpa_exe_env = flow_manager_core.get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
+        if rpa_exe_env is None or str_tools.str_is_empty(rpa_exe_env.name_en):
+            raise EasyRpaException("flow exe env not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
         # dispatch task
-        flow_task_dispatch(flow=flow,flow_task=task,flow_exe_env=rpa_exe_env)
+        flow_task_dispatch(flow=flow,flow_task=task,flow_exe_env=rpa_exe_env.name_en)
 
         # update task
-        update_flow_task = FlowTask(id=task.id,retry_number=task.retry_number+1,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
+        update_flow_task = FlowTask(id=task.id,retry_number=(task.retry_number if task.retry_number is not None else 0)+1,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
         FlowTaskDBManager.update_flow_task(update_flow_task)
     except Exception as e:
         update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.FAIL.value[1])
         FlowTaskDBManager.update_flow_task(update_flow_task)
-        FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=task.id,log_type=LogTypeEnum.TXT.value[1],message="task dispatch error , message: " + str(e)))
+        FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=task.id,log_type=LogTypeEnum.TXT.value[1],message="task retry error , message: " + str(e)))
         
