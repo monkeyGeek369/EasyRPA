@@ -34,6 +34,14 @@ class PullJobImplClass(JobTypeAbstractClass):
         record = None
 
         try:
+            # search job record by biz_no
+            if str_tools.str_is_empty(dto.biz_no):
+                raise EasyRpaException('task result job handler fail: biz_no is empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+            
+            record = DispatchRecordDBManager.get_dispatch_record_by_id(id=int(dto.biz_no))
+            if record is None:
+                raise EasyRpaException('task result job handler fail: record not found',EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
+
             # if fail then return
             if dto.status != FlowTaskStatusEnum.SUCCESS.value[1]:
                 raise EasyRpaException('task result job handler fail: task error',EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,dto)
@@ -46,14 +54,6 @@ class PullJobImplClass(JobTypeAbstractClass):
             data = json.loads(dto.result_data)
             if not isinstance(data,list):
                 raise EasyRpaException('task result job handler fail: task result is not list',EasyRpaExceptionCodeEnum.DATA_TYPE_ERROR.value[1],None,dto)
-
-            # search job record by biz_no
-            if str_tools.str_is_empty(dto.biz_no):
-                raise EasyRpaException('task result job handler fail: biz_no is empty',EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
-            
-            record = DispatchRecordDBManager.get_dispatch_record_by_id(id=int(dto.biz_no))
-            if record is None:
-                raise EasyRpaException('task result job handler fail: record not found',EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
 
             # search job by id
             if number_tool.num_is_empty(record.job_id):
