@@ -19,8 +19,9 @@ DATABASE_URL = f"mysql+pymysql://{db_config['username']}:{db_config['password']}
 #engine = create_engine(DATABASE_URL, convert_unicode=True, pool_size=10, max_overflow=20, pool_timeout=30, echo=True)
 engine = create_engine(
     DATABASE_URL,
-    pool_size=10,
-    pool_recycle=1600,  # 假设数据库超时时间大于1600秒
+    pool_size=50,  # 增加连接池大小
+    pool_timeout=30,  # 调整连接超时时间
+    pool_recycle=3600,  # 假设数据库超时时间大于3600秒
     pool_pre_ping=True,
     pool_use_lifo=True,
     echo_pool=True,
