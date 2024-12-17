@@ -116,3 +116,9 @@ class DispatchRecordDBManager:
             )
         return query.count()
     
+    @db_session
+    def select_dispatch_records_by_ids(session, ids: list[int]) -> list[DispatchRecord]:
+        if ids is None or len(ids) == 0:
+            return []
+        return session.query(DispatchRecord).filter(DispatchRecord.id.in_(ids)).all()
+    

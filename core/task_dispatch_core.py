@@ -1,6 +1,6 @@
 from database.models import FlowTask,Flow,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_req_dto import FlowTaskExeReqDTO
-import requests,random,datetime,pytz
+import requests,random,datetime
 from database.flow_task_db_manager import FlowTaskDBManager
 from database.flow_task_log_db_manager import FlowTaskLogDBManager
 from database.flow_db_manager import FlowDbManager
@@ -40,6 +40,12 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
             leisure_robot.current_task_id = flow_task.id
             robot_manager_core.update_robot(robot_id=leisure_robot.id,robot_code=leisure_robot.robot_code,robot_ip=leisure_robot.robot_ip,port=leisure_robot.port,current_task_id=flow_task.id)
             
+        # dispatch success when have robot
+        is_dispatch_success = True
+
+        # add retry log
+        FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"dispatch success , current retry number is {flow_task.retry_number} , robot code is {leisure_robot.robot_code} , ip is {leisure_robot.robot_ip}."))
+
         # build params
         flow_task_exe_req_dto = FlowTaskExeReqDTO(task_id=flow_task.id
                                                   ,site_id=flow_task.site_id
@@ -66,7 +72,7 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
             result_txt = JsonTool.any_to_dict(response.text)
             if result_txt.get("code") == 200 and result_txt.get("data") == True:
                 is_success = True
-        
+
         # response handler
         if is_success:
             # update task status
@@ -76,7 +82,6 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
             # add task log
             FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"task dispatch success, sended to robot[{url}]。"))
             
-            is_dispatch_success = True
         else:
             # update task status
             update_flow_task = FlowTask(id=flow_task.id,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
@@ -197,7 +202,7 @@ def task_retry(task:FlowTask):
         if result:
             update_flow_task = FlowTask(id=task.id,retry_number=(task.retry_number if task.retry_number is not None else 0)+1)
         else:
-            update_flow_task = FlowTask(id=task.id,retry_number=(task.retry_number if task.retry_number is not None else 0)+1,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
+            update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
         FlowTaskDBManager.update_flow_task(update_flow_task)
     except Exception as e:
         update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.FAIL.value[1])

@@ -18,3 +18,4 @@ class JobDetailModel(ResponseDoBaseModel):
     parent_job_name:str
     current_data_id:int
     last_record_id:int
+    last_record_status:str

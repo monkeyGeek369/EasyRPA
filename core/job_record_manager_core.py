@@ -28,3 +28,10 @@ def get_record_status() -> list[JobRecordStatusModel]:
     result.append(JobRecordStatusModel(id=JobStatusEnum.DISPATCH_FAIL.value[1],des=JobStatusEnum.DISPATCH_FAIL.value[2]))
 
     return result
+
+def get_record_by_ids(ids: list[int]) -> list[JobRecordDetailModel]:
+    if ids is None or len(ids) == 0:
+        return []
+    results = DispatchRecordDBManager.select_dispatch_records_by_ids(ids=ids)
+
+    return records2RecordDetailModels(results)
