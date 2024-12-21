@@ -42,6 +42,13 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
             
         # dispatch success when have robot
         is_dispatch_success = True
+        
+        # update retry number
+        new_task_retry_number = (flow_task.retry_number if flow_task.retry_number is not None else 0)
+        new_task_retry_number = new_task_retry_number + 1
+        update_task_retry = FlowTask(id=flow_task.id,retry_number=new_task_retry_number)
+        FlowTaskDBManager.update_flow_task(update_task_retry)
+        FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"dispatch success , current exe number is {new_task_retry_number} "))
 
         # build params
         flow_task_exe_req_dto = FlowTaskExeReqDTO(task_id=flow_task.id
@@ -197,15 +204,7 @@ def task_retry(task:FlowTask):
 
         # update task
         update_flow_task = None
-        if result:
-            # update retry number
-            new_task_retry_number = (task.retry_number if task.retry_number is not None else 0)
-            new_task_retry_number = new_task_retry_number + 1
-            update_flow_task = FlowTask(id=task.id,retry_number=new_task_retry_number)
-                
-            # add retry log
-            FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=task.id,log_type=LogTypeEnum.TXT.value[1],message=f"dispatch success , current exe number is {new_task_retry_number} "))
-        else:
+        if not result:
             update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
         
         if update_flow_task is not None:
