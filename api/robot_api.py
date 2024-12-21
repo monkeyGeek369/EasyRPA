@@ -60,11 +60,6 @@ def robot_log_report(dto:RobotLogReportReqDTO) -> bool:
     if robot is None:
         raise EasyRpaException("robot not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
 
-    # update robot task
-    if number_tool.num_is_not_empty(dto.get("task_id")) and robot.current_task_id != dto.get("task_id"):
-        robot.current_task_id = dto.get("task_id")
-        robot.status = RobotStatusTypeEnum.RUNNING.value[1]
-
     # insert robot log
     robot_manager_core.add_robot_log(robot_id=robot.id,task_id=dto.get("task_id"),log_type=dto.get("log_type"),message=dto.get("message"))
     return True

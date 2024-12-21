@@ -200,7 +200,8 @@ def task_retry(task:FlowTask):
 
         # update task
         if result:
-            update_flow_task = FlowTask(id=task.id,retry_number=(task.retry_number if task.retry_number is not None else 0)+1)
+            if number_tool.num_is_not_empty(task.result_code) and str(task.result_code) in retry_codes:
+                update_flow_task = FlowTask(id=task.id,retry_number=(task.retry_number if task.retry_number is not None else 0)+1)
         else:
             update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
         FlowTaskDBManager.update_flow_task(update_flow_task)
