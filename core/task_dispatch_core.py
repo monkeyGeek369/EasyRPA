@@ -212,4 +212,9 @@ def task_retry(task:FlowTask):
         update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.FAIL.value[1])
         FlowTaskDBManager.update_flow_task(update_flow_task)
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=task.id,log_type=LogTypeEnum.TXT.value[1],message="task retry error , message: " + str(e)))
+
+        # get next waiting task
+        waiting_tasks = task_manager_core.search_waiting_tasks()
+        if waiting_tasks is not None and len(waiting_tasks) > 0:
+            task_retry(task=waiting_tasks[0])
         
