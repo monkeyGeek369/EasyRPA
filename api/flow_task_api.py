@@ -138,7 +138,12 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
                                                             ,message="""rpa script exe error: {}""".format(str(e))))
     finally:
         # task retry
-        task_dispatch_core.task_retry(task=flow_task)
+        if flow_task.status != FlowTaskStatusEnum.SUCCESS.value[1]:
+            task_dispatch_core.task_retry(task=flow_task)
+        else:
+            waiting_tasks = task_manager_core.search_waiting_tasks()
+            if waiting_tasks:
+                task_dispatch_core.task_retry(task=waiting_tasks[0])
     return False
 
 @flow_task_bp.route('/flow/task/search', methods=['POST'])
