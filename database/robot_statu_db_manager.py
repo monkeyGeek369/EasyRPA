@@ -132,3 +132,7 @@ class RobotStatuDBManager:
             )
         return query.count()
     
+    @db_session
+    def get_robot_statu_by_task_id(session, task_id:int) -> RobotStatu:
+        return session.query(RobotStatu).filter(RobotStatu.current_task_id == task_id).first()
+    

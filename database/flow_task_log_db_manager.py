@@ -1,5 +1,6 @@
 from database.db_session import db_session,update_common_fields,create_common_fields
 from database.models import FlowTaskLog
+from robot_statu_db_manager import RobotStatuDBManager
 
 class FlowTaskLogDBManager:
 
@@ -13,9 +14,7 @@ class FlowTaskLogDBManager:
 
     @db_session
     def create_flow_task_log(session, flow_task_log:FlowTaskLog):
-        if not flow_task_log:
-            raise ValueError("Flow task log cannot be empty")
-        
+
         # task_id不可以为空
         if not flow_task_log.task_id:
             raise ValueError("Task ID cannot be empty")
@@ -23,6 +22,11 @@ class FlowTaskLogDBManager:
         # log_type不可以为空
         if not flow_task_log.log_type:
             raise ValueError("Log type cannot be empty")
+        
+        # set current robot ip
+        robot = RobotStatuDBManager.get_robot_statu_by_task_id(task_id=flow_task_log.task_id)
+        if robot:
+            flow_task_log.robot_ip = robot.robot_ip
         
         create_common_fields(flow_task_log)
         session.add(flow_task_log)
@@ -54,9 +58,13 @@ class FlowTaskLogDBManager:
             if data.screenshot:
                 flow_task_log.screenshot = data.screenshot
 
+            # set current robot ip
+            robot = RobotStatuDBManager.get_robot_statu_by_task_id(task_id=flow_task_log.task_id)
             # robot_ip不为空则更新
             if data.robot_ip:
                 flow_task_log.robot_ip = data.robot_ip
+            elif robot:
+                flow_task_log.robot_ip = robot.robot_ip
 
             update_common_fields(flow_task_log)
             session.commit()

@@ -199,12 +199,15 @@ def task_retry(task:FlowTask):
         result = flow_task_dispatch(flow=flow,flow_task=task,flow_exe_env=rpa_exe_env.name_en)
 
         # update task
+        update_flow_task = None
         if result:
             if number_tool.num_is_not_empty(task.result_code) and str(task.result_code) in retry_codes:
                 update_flow_task = FlowTask(id=task.id,retry_number=(task.retry_number if task.retry_number is not None else 0)+1)
         else:
             update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.WAIT_EXE.value[1])
-        FlowTaskDBManager.update_flow_task(update_flow_task)
+        
+        if update_flow_task is not None:
+            FlowTaskDBManager.update_flow_task(update_flow_task)
     except Exception as e:
         update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.FAIL.value[1])
         FlowTaskDBManager.update_flow_task(update_flow_task)
