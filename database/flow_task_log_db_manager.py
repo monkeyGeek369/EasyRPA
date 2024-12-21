@@ -1,6 +1,6 @@
 from database.db_session import db_session,update_common_fields,create_common_fields
 from database.models import FlowTaskLog
-from robot_statu_db_manager import RobotStatuDBManager
+from database.robot_statu_db_manager import RobotStatuDBManager
 
 class FlowTaskLogDBManager:
 
