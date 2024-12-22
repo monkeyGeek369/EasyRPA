@@ -74,6 +74,14 @@ class DispatchRecordDBManager:
         return False
     
     @db_session
+    def delete_dispatch_record_by_job_id(session, job_id):
+        if number_tool.num_is_empty(job_id):
+            raise ValueError("Job ID cannot be empty")
+
+        session.query(DispatchRecord).filter(DispatchRecord.job_id == job_id).delete()
+        session.commit()
+    
+    @db_session
     def select_page_list(session,do:DispatchRecord,page: int,page_size: int,sorts: dict) -> list[DispatchRecord]:
         # 构造排序条件
         sort_conditions = []

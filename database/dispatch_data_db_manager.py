@@ -67,6 +67,13 @@ class DispatchDataDBManager:
         return False
     
     @db_session
+    def delete_dispatch_data_by_job_id(session,job_id:int):
+        if number_tool.num_is_empty(job_id):
+            raise ValueError("Job ID cannot be empty")
+        session.query(DispatchData).filter(DispatchData.job_id == job_id).delete()
+        session.commit()
+    
+    @db_session
     def get_first_sort_asc_by_id(session,job_id:int) -> DispatchData:
         if number_tool.num_is_empty(job_id):
             raise ValueError("Job ID cannot be empty")

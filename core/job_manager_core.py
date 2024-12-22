@@ -2,6 +2,8 @@ from database.models import DispatchJob
 from easyrpa.models.base.sort_base_model import SortBaseModel
 from models.job.job_detail_model import JobDetailModel
 from database.dispatch_job_db_manager import DispatchJobDBManager
+from database.dispatch_data_db_manager import DispatchDataDBManager
+from database.dispatch_record_db_manager import DispatchRecordDBManager
 from easyrpa.tools.common_tools import CommonTools
 from transfer.job_transfer import job2JobDetailModel,jobs2JobDetailModels
 from easyrpa.tools import str_tools,number_tool
@@ -104,6 +106,8 @@ def delete_job(id:int) -> bool:
         raise EasyRpaException("job id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,id)
     
     DispatchJobDBManager.delete_dispatch_job(id=id)
+    DispatchDataDBManager.delete_dispatch_data_by_job_id(job_id=id)
+    DispatchRecordDBManager.delete_dispatch_record_by_job_id(job_id=id)
     dispatch_job_manager.delete_job_from_scheduler_by_id(job_id=id)
     return True
 
