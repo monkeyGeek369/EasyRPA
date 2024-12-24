@@ -149,3 +149,9 @@ def get_all_sys_log_types(dto) -> list[MetaDataBaseModel]:
     results.append(MetaDataBaseModel(id=SysLogTypeEnum.DEBUG.value[1],des=SysLogTypeEnum.DEBUG.value[2]))
     results.append(MetaDataBaseModel(id=SysLogTypeEnum.BIZ.value[1],des=SysLogTypeEnum.BIZ.value[2]))
     return JsonTool.any_to_dict(results)
+
+@robot_api_bp.route('/release/robot', methods=['POST'])
+@easyrpa_request_wrapper
+def release_robot(code:str) -> bool:
+    robot_manager_core.release_robot(robot_code=code)
+    return True

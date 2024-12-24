@@ -168,3 +168,23 @@ def delete_robot_log(robot_id:int) -> bool:
     
     return RobotLogDBManager.delete_robot_log_by_robot_id(robot_id=robot_id)
 
+def release_robot(robot_code:str) -> bool:
+    if str_tools.str_is_empty(robot_code):
+        raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
+    
+    robot = get_robot_by_code(robot_code=robot_code)
+
+    if robot is None:
+        return False
+    
+    # update robot
+    robot.status = RobotStatusTypeEnum.CLOSED.value[1]
+    robot.current_task_id = None
+    RobotStatuDBManager.update_robot_statu(data=robot)
+
+    # request agent
+    url = f"http://{robot.robot_ip}:{robot.port}/release/agent"
+    req_json = request_tool.request_base_model_json_builder("release")
+    requests.get(url,json=req_json)
+    
+    return True
