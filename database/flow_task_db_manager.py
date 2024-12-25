@@ -206,3 +206,7 @@ class FlowTaskDBManager:
     @db_session
     def get_all_waiting_tasks(session) -> list[FlowTask]:
         return session.query(FlowTask).filter(FlowTask.status == FlowTaskStatusEnum.WAIT_EXE.value[1]).all()
+    
+    @db_session
+    def get_all_execution_tasks(session) -> list[FlowTask]:
+        return session.query(FlowTask).filter(FlowTask.status == FlowTaskStatusEnum.EXECUTION.value[1]).all()

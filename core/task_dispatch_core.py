@@ -60,7 +60,8 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
                                                   ,flow_exe_env=flow_exe_env
                                                   ,flow_standard_message=flow_task.flow_standard_message
                                                   ,flow_exe_script=flow.flow_exe_script
-                                                  ,sub_source=flow_task.sub_source)
+                                                  ,sub_source=flow_task.sub_source
+                                                  ,max_exe_time=flow.max_exe_time)
         # build url
         url = f"http://{leisure_robot.robot_ip}:{leisure_robot.port}/flow/task/async/exe"
 
@@ -146,12 +147,16 @@ def check_waiting_task(params):
     while True:
         # get all waiting tasks
         waiting_tasks = task_manager_core.search_waiting_tasks()
-        if waiting_tasks is None or len(waiting_tasks) == 0:
-            continue
-        else:
+        if waiting_tasks is not None and len(waiting_tasks) > 0:
             for waiting_task in waiting_tasks:
                 task_retry(waiting_task)
         
+        # get all execution tasks
+        execution_tasks = task_manager_core.search_execution_tasks()
+        if execution_tasks is not None and len(execution_tasks) > 0:
+            for execution_task in execution_tasks:
+                task_retry(execution_task)
+
         import time
         # wait one minutes
         time.sleep(60)
@@ -172,13 +177,6 @@ def task_retry(task:FlowTask):
         if flow is None:
             raise EasyRpaException("flow not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.flow_id)
         
-        # retry code
-        if str_tools.str_is_empty(flow.retry_code):
-            raise EasyRpaException("flow retry code is empty, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
-        retry_codes = flow.retry_code.split(",")
-        if number_tool.num_is_not_empty(task.result_code) and str(task.result_code) not in retry_codes:
-            raise EasyRpaException("retry code not config, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
-
         # max retry number
         if number_tool.num_is_empty(flow.max_retry_number):
             raise EasyRpaException("flow max retry number is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
@@ -191,8 +189,19 @@ def task_retry(task:FlowTask):
         current_time = int(datetime.datetime.now().timestamp())
         created_time = int(task.created_time.timestamp())
         time_span = current_time - created_time
-        if time_span > (flow.max_exe_time * 1000):
+        if time_span > (flow.max_retry_number * flow.max_exe_time * 1000):
             raise EasyRpaException("task exe time is over max exe time",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+
+        # executing task handler
+        if task.status == FlowTaskStatusEnum.EXECUTION.value[1]:
+            return
+
+        # retry code
+        if str_tools.str_is_empty(flow.retry_code):
+            raise EasyRpaException("flow retry code is empty, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        retry_codes = flow.retry_code.split(",")
+        if number_tool.num_is_not_empty(task.result_code) and str(task.result_code) not in retry_codes:
+            raise EasyRpaException("retry code not config, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
         # search flow exe env
         rpa_exe_env = flow_manager_core.get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
