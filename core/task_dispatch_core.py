@@ -189,7 +189,7 @@ def task_retry(task:FlowTask):
         current_time = int(datetime.datetime.now().timestamp())
         created_time = int(task.created_time.timestamp())
         time_span = current_time - created_time
-        if time_span > (flow.max_retry_number * flow.max_exe_time * 1000):
+        if time_span > (flow.max_retry_number * flow.max_exe_time):
             raise EasyRpaException("task exe time is over max exe time",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
         # executing task handler
