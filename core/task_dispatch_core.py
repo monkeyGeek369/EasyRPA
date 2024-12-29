@@ -167,10 +167,6 @@ def task_retry(task:FlowTask):
         # base check
         if number_tool.num_is_empty(task.flow_id):
             raise EasyRpaException("flow id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.flow_id)
-        if number_tool.num_is_empty(flow.max_exe_time):
-            raise EasyRpaException("flow max exe time is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
-        if number_tool.num_is_empty(flow.max_retry_number):
-            raise EasyRpaException("flow max retry number is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
         # task status
         if task.status == FlowTaskStatusEnum.SUCCESS.value[1]:
@@ -180,6 +176,10 @@ def task_retry(task:FlowTask):
         flow = FlowDbManager.get_flow_by_id(flow_id=task.flow_id)
         if flow is None:
             raise EasyRpaException("flow not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.flow_id)
+        if number_tool.num_is_empty(flow.max_exe_time):
+            raise EasyRpaException("flow max exe time is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        if number_tool.num_is_empty(flow.max_retry_number):
+            raise EasyRpaException("flow max retry number is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
         
         # max retry number
         if number_tool.num_is_not_empty(task.retry_number) and task.retry_number >= flow.max_retry_number:
