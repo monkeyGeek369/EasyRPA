@@ -167,6 +167,10 @@ def task_retry(task:FlowTask):
         # base check
         if number_tool.num_is_empty(task.flow_id):
             raise EasyRpaException("flow id is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.flow_id)
+        if number_tool.num_is_empty(flow.max_exe_time):
+            raise EasyRpaException("flow max exe time is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        if number_tool.num_is_empty(flow.max_retry_number):
+            raise EasyRpaException("flow max retry number is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
         # task status
         if task.status == FlowTaskStatusEnum.SUCCESS.value[1]:
@@ -178,19 +182,15 @@ def task_retry(task:FlowTask):
             raise EasyRpaException("flow not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.flow_id)
         
         # max retry number
-        if number_tool.num_is_empty(flow.max_retry_number):
-            raise EasyRpaException("flow max retry number is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
         if number_tool.num_is_not_empty(task.retry_number) and task.retry_number >= flow.max_retry_number:
             raise EasyRpaException("task retry number is over max retry number",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
-        # max retry time
-        if number_tool.num_is_empty(flow.max_exe_time):
-            raise EasyRpaException("flow max exe time is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        # max waiting time , default 24 hours
         current_time = int(datetime.datetime.now().timestamp())
         created_time = int(task.created_time.timestamp())
         time_span = current_time - created_time
-        if time_span > (flow.max_retry_number * flow.max_exe_time):
-            raise EasyRpaException("task exe time is over max exe time",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
+        if time_span > (24 * 60 * 60):
+            raise EasyRpaException("task exe time is over max wait time(24 hours)",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
         # executing task handler
         if task.status == FlowTaskStatusEnum.EXECUTION.value[1]:
