@@ -1,6 +1,6 @@
 from database.models import FlowTask,Flow,FlowTaskLog
 from easyrpa.models.agent_models.flow_task_exe_req_dto import FlowTaskExeReqDTO
-import requests,random,datetime
+import requests,random,datetime,threading
 from database.flow_task_db_manager import FlowTaskDBManager
 from database.flow_task_log_db_manager import FlowTaskLogDBManager
 from database.flow_db_manager import FlowDbManager
@@ -14,9 +14,13 @@ from core import robot_manager_core,task_manager_core,flow_manager_core
 from easyrpa.enums.robot_status_type_enum import RobotStatusTypeEnum
 from easyrpa.tools.json_tools import JsonTool
 
+# local obj
+thread_lock_robot_lock = threading.RLock()
+thread_lock_robot_unlock = threading.RLock()
 
 def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
      is_dispatch_success = False
+     is_this_lock = False
 
      try:
         # get leisure robot
@@ -31,10 +35,10 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
             random_index = random.uniform(0, len(robots) - 1)
             leisure_robot = robots[int(random_index)]
         
-        if robot_is_lock(robot_code=leisure_robot.robot_code):
+        is_this_lock = robot_lock(robot_code=leisure_robot.robot_code)
+        if not is_this_lock:
             return is_dispatch_success
         else:
-            robot_lock(robot_code=leisure_robot.robot_code)
             # update robot
             leisure_robot.status = RobotStatusTypeEnum.RUNNING.value[1]
             leisure_robot.current_task_id = flow_task.id
@@ -103,45 +107,40 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
             FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message="task dispatch error,message:" + str(e)))
 
      finally:
-        if leisure_robot is not None:
+        if leisure_robot is not None and is_this_lock:
             robot_unlock(robot_code=leisure_robot.robot_code)
     
      return is_dispatch_success
      
-def robot_lock(robot_code:str):
-    if str_tools.str_is_empty(robot_code):
-        raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
-    
-    locked_robots = local_store_tools.get_data(key="locked_robots")
+def robot_lock(robot_code:str) -> bool:
+    with thread_lock_robot_lock:
+        if str_tools.str_is_empty(robot_code):
+            raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
+        
+        locked_robots = local_store_tools.get_data(key="locked_robots")
 
-    if locked_robots is None:
-        local_store_tools.add_data(key="locked_robots",value = [robot_code])
-    else:
-        if robot_code not in locked_robots:
-            locked_robots.append(robot_code)
-            local_store_tools.update_data(key="locked_robots",value = locked_robots)
+        if locked_robots is None:
+            local_store_tools.add_data(key="locked_robots",value = [robot_code])
+            return True
+        else:
+            if robot_code not in locked_robots:
+                locked_robots.append(robot_code)
+                local_store_tools.update_data(key="locked_robots",value = locked_robots)
+                return True
+            else:
+                return False
 
 def robot_unlock(robot_code:str):
-    if str_tools.str_is_empty(robot_code):
-        raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
-    
-    locked_robots = local_store_tools.get_data(key="locked_robots")
+    with thread_lock_robot_unlock:
+        if str_tools.str_is_empty(robot_code):
+            raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
+        
+        locked_robots = local_store_tools.get_data(key="locked_robots")
 
-    if locked_robots is not None:
-        if robot_code in locked_robots:
-            locked_robots.remove(robot_code)
-            local_store_tools.update_data(key="locked_robots",value = locked_robots)
-
-def robot_is_lock(robot_code:str) -> bool:
-    if str_tools.str_is_empty(robot_code):
-        raise EasyRpaException("robot code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,robot_code)
-    
-    locked_robots = local_store_tools.get_data(key="locked_robots")
-
-    if locked_robots is not None:
-        if robot_code in locked_robots:
-            return True
-    return False
+        if locked_robots is not None:
+            if robot_code in locked_robots:
+                locked_robots.remove(robot_code)
+                local_store_tools.update_data(key="locked_robots",value = locked_robots)
 
 def check_waiting_task(params):
     while True:
