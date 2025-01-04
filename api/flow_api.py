@@ -13,6 +13,8 @@ from models.flow.flow_add_req_model import FlowAddReqModel
 from models.flow.flow_update_req_model import FlowUpdateReqModel
 from models.meta_data_item.meta_data_item_search_res_model import MetaDataItemSearchResModel
 from configuration.app_config_manager import AppConfigManager
+from easyrpa.models.flow.flow_script_search_dto import FlowScriptSearchDTO
+from easyrpa.models.flow.flow_script_info_dto import FlowScriptInfoDTO
 
 flow_api_bp =  Blueprint('flow_api',__name__)
 
@@ -184,4 +186,38 @@ def search_dim_flow(query:str) -> FlowSearchResModel:
         total=None,
         sorts=None
     )
+    return result
+
+@flow_api_bp.route('/flow/search/script', methods=['POST'])
+@easyrpa_request_wrapper
+def flow_script_search(dto:FlowScriptSearchDTO) -> FlowScriptInfoDTO:
+    if str_is_empty(dto.get("flow_code")):
+        raise EasyRpaException("flow code is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+    if str_is_empty(dto.get("script_type")):
+        raise EasyRpaException("script type is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,dto)
+
+    flows = flow_manager_core.search_flow_by_codes(codes=[dto.get("flow_code")])
+    if len(flows) == 0:
+        raise EasyRpaException("flow not found",EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
+    if len(flows) > 1:
+        raise EasyRpaException("flow found more than one",EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
+    flow = flows[0]
+
+    # get script
+    script = None
+    if dto.get("script_type") == "check":
+        script = flow.request_check_script
+    elif dto.get("script_type") == "adapter":
+        script = flow.request_adapt_script
+    elif dto.get("script_type") == "execution":
+        script = flow.flow_exe_script
+    elif dto.get("script_type") == "response":
+        script = flow.flow_result_handle_script
+
+    result = FlowScriptInfoDTO(
+        flow_code=flow.flow_code,
+        script_type= dto.get("script_type"),
+        script=script
+    )
+
     return result

@@ -6,7 +6,7 @@ from database.flow_task_log_db_manager import FlowTaskLogDBManager
 from database.flow_db_manager import FlowDbManager
 from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 from easyrpa.enums.log_type_enum import LogTypeEnum
-from easyrpa.tools import request_tool,str_tools,local_store_tools,number_tool
+from easyrpa.tools import request_tool,str_tools,local_store_tools,number_tool,blake3_tool
 from database.robot_statu_db_manager import RobotStatuDBManager
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
@@ -54,6 +54,12 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
         FlowTaskDBManager.update_flow_task(update_task_retry)
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=flow_task.id,log_type=LogTypeEnum.TXT.value[1],message=f"dispatch success , current exe number is {new_task_retry_number} "))
 
+        # get script hash
+        hash_tools = blake3_tool.Blake3Tool(salt=flow.flow_code,key="script_exe")
+        script_hash = hash_tools.hash(data=flow.flow_exe_script)
+        if str_tools.str_is_empty(script_hash):
+            raise EasyRpaException("flow exe script hash generate error",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,flow.flow_code)
+
         # build params
         flow_task_exe_req_dto = FlowTaskExeReqDTO(task_id=flow_task.id
                                                   ,site_id=flow_task.site_id
@@ -61,9 +67,8 @@ def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
                                                   ,flow_code=flow.flow_code
                                                   ,flow_name=flow.flow_name
                                                   ,flow_rpa_type=flow.flow_rpa_type
-                                                  ,flow_exe_env=flow_exe_env
                                                   ,flow_standard_message=flow_task.flow_standard_message
-                                                  ,flow_exe_script=flow.flow_exe_script
+                                                  ,script_hash=script_hash
                                                   ,sub_source=flow_task.sub_source
                                                   ,max_exe_time=flow.max_exe_time)
         # build url

@@ -60,10 +60,10 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         conda_env = app.get_console_default_conda_env()
 
         # 执行校验脚本
-        request_check_script_exe(conda_env,dto.request_standard_message,flow.request_check_script,dto.sub_source,flow_configuration.config_json)
+        request_check_script_exe(flow_code=flow.flow_code,flow_standard_message=dto.request_standard_message,flow_exe_script=flow.request_check_script,sub_source=dto.sub_source,flow_config=flow_configuration.config_json)
 
         # 执行适配脚本-获取流程报文字典
-        dict_adapter_result = request_adapter_script_exe(conda_env,dto.request_standard_message,flow.request_adapt_script,dto.sub_source,flow_configuration.config_json)
+        dict_adapter_result = request_adapter_script_exe(flow_code=flow.flow_code,flow_standard_message=dto.request_standard_message,flow_exe_script=flow.request_adapt_script,sub_source=dto.sub_source,flow_config=flow_configuration.config_json)
 
         # 创建流程任务
         flow_task.flow_id = dto.flow_id

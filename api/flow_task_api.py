@@ -1,5 +1,5 @@
 from flask import Blueprint
-from core.script_exe_core import rpa_result_script_exe
+from core.script_exe_core import response_result_script_exe
 from easyrpa.tools.request_tool import easyrpa_request_wrapper
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
@@ -71,25 +71,21 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
                                     ,result=dto.result
                                     ,error_msg=dto.error_msg
                                     ,code=dto.code)
-        rpa_result_message = json.dumps(asdict(exe_result),ensure_ascii=False)
+        response_result_message = json.dumps(asdict(exe_result),ensure_ascii=False)
 
         # 更新任务+记录日志
-        flow_task = FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id,task_result_message=rpa_result_message))
+        flow_task = FlowTaskDBManager.update_flow_task(FlowTask(id= flow_task.id,task_result_message=response_result_message))
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id= flow_task.id
                                                             ,log_type=LogTypeEnum.TASK_RESULT.value[1]
-                                                            ,message="""rpa result: {}""".format(rpa_result_message)))
+                                                            ,message="""rpa result: {}""".format(response_result_message)))
         
         # 获取执行环境
         app = AppConfigManager()
         conda_env = app.get_console_default_conda_env()
 
         # 执行返回值脚本
-        dict_response_result = rpa_result_script_exe(flow_exe_env=conda_env
-                                                    ,rpa_result_message=rpa_result_message
-                                                    ,flow_exe_script=flow.flow_result_handle_script
-                                                    ,sub_source=dto.sub_source
-                                                    ,flow_config=None)
-        logs_tool.log_business_info(title="flow_task_result_handler",message="rpa_result_script_exe",data=dict_response_result)
+        dict_response_result = response_result_script_exe(flow_code=flow.flow_code,response_message=response_result_message,flow_exe_script=flow.flow_result_handle_script,sub_source=dto.sub_source,flow_config=None)
+        logs_tool.log_business_info(title="flow_task_result_handler",message="response_result_script_exe",data=dict_response_result)
         dict_response_result_json = json.dumps(asdict(dict_response_result),ensure_ascii=False)
         logs_tool.log_business_info(title="flow_task_result_handler",message="dict_response_result_json",data=dict_response_result_json)
         
