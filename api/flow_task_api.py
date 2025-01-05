@@ -17,7 +17,6 @@ from easyrpa.enums.flow_task_status_enum import FlowTaskStatusEnum
 from dataclasses import asdict
 from core.flow_task_exe_result_notify_core import flow_task_exe_result_notify
 from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
-from configuration.app_config_manager import AppConfigManager
 from models.task.task_search_req_model import TaskSearchReqModel
 from models.task.task_search_res_model import TaskSearchResModel
 from models.task_log.task_log_search_req_model import TaskLogSearchReqModel
