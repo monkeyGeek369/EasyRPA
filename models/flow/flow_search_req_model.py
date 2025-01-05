@@ -9,7 +9,6 @@ class FlowSearchReqModel(RequestPageBaseModel):
     flow_code:str
     flow_name:str
     flow_rpa_type:int
-    flow_exe_env:int
     flow_biz_type:int
     retry_code:str
     is_active:bool

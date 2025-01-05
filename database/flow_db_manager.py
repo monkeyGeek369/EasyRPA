@@ -52,9 +52,6 @@ class FlowDbManager:
             if number_tool.num_is_not_empty(flow.flow_rpa_type) and existing_flow.flow_rpa_type != flow.flow_rpa_type:
                 existing_flow.flow_rpa_type = flow.flow_rpa_type
 
-            if number_tool.num_is_not_empty(flow.flow_exe_env) and existing_flow.flow_exe_env != flow.flow_exe_env:
-                existing_flow.flow_exe_env = flow.flow_exe_env
-
             if number_tool.num_is_not_empty(flow.flow_biz_type) and existing_flow.flow_biz_type != flow.flow_biz_type:
                 existing_flow.flow_biz_type = flow.flow_biz_type
                 
@@ -121,7 +118,6 @@ class FlowDbManager:
             Flow.flow_code.contains(do.flow_code) if do.flow_code is not None else True,
             Flow.flow_name.contains(do.flow_name) if do.flow_name is not None else True,
             Flow.flow_rpa_type == do.flow_rpa_type if do.flow_rpa_type is not None else True,
-            Flow.flow_exe_env == do.flow_exe_env if do.flow_exe_env is not None else True,
             Flow.flow_biz_type == do.flow_biz_type if do.flow_biz_type is not None else True,
             Flow.retry_code.contains(do.retry_code) if do.retry_code is not None else True,
             Flow.created_id == do.created_id if do.created_id is not None else True,
@@ -143,7 +139,6 @@ class FlowDbManager:
             Flow.flow_code.contains(do.flow_code) if do.flow_code is not None else True,
             Flow.flow_name.contains(do.flow_name) if do.flow_name is not None else True,
             Flow.flow_rpa_type == do.flow_rpa_type if do.flow_rpa_type is not None else True,
-            Flow.flow_exe_env == do.flow_exe_env if do.flow_exe_env is not None else True,
             Flow.flow_biz_type == do.flow_biz_type if do.flow_biz_type is not None else True,
             Flow.retry_code.contains(do.retry_code) if do.retry_code is not None else True,
             Flow.created_id == do.created_id if do.created_id is not None else True,

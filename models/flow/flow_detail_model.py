@@ -11,8 +11,6 @@ class FlowDetailModel(ResponseDoBaseModel):
     flow_name:str
     flow_rpa_type:int
     flow_rpa_type_name:str
-    flow_exe_env:int
-    flow_exe_env_name:str
     flow_biz_type:int
     flow_biz_type_name:str
     max_retry_number:int

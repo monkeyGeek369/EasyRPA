@@ -40,11 +40,9 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
         flow_code=req.get("flow_code"),
         flow_name=req.get("flow_name"),
         flow_rpa_type=req.get("flow_rpa_type"),
-        flow_exe_env=req.get("flow_exe_env"),
         sub_source=req.get("sub_source"),
         status=req.get("status"),
         error_msg=req.get("error_msg"),
-        print_str=req.get("print_str"),
         result=req.get("result"),
         code=req.get("code")
     )
@@ -67,7 +65,6 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
         
         # 获取rpa执行结果
         exe_result = ScriptExeResult(status=dto.status
-                                    ,print_str=dto.print_str
                                     ,result=dto.result
                                     ,error_msg=dto.error_msg
                                     ,code=dto.code)
@@ -78,10 +75,6 @@ def flow_task_result_handler(req:FlowTaskExeResDTO) -> bool:
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id= flow_task.id
                                                             ,log_type=LogTypeEnum.TASK_RESULT.value[1]
                                                             ,message="""rpa result: {}""".format(response_result_message)))
-        
-        # 获取执行环境
-        app = AppConfigManager()
-        conda_env = app.get_console_default_conda_env()
 
         # 执行返回值脚本
         dict_response_result = response_result_script_exe(flow_code=flow.flow_code,response_message=response_result_message,flow_exe_script=flow.flow_result_handle_script,sub_source=dto.sub_source,flow_config=None)

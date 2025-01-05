@@ -7,7 +7,7 @@ from configuration.app_config_manager import AppConfigManager
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 
-def flow2FlowDetailModel(flow:Flow,site_detail:SiteDetailModel,exe_env_item:dict,biz_type_item:dict,rpa_type_item:dict) -> FlowDetailModel:
+def flow2FlowDetailModel(flow:Flow,site_detail:SiteDetailModel,biz_type_item:dict,rpa_type_item:dict) -> FlowDetailModel:
     # copy
     flow_detail = FlowDetailModel(
         id=flow.id,
@@ -17,8 +17,6 @@ def flow2FlowDetailModel(flow:Flow,site_detail:SiteDetailModel,exe_env_item:dict
         flow_name=flow.flow_name,
         flow_rpa_type=flow.flow_rpa_type,
         flow_rpa_type_name=rpa_type_item.name_cn if rpa_type_item is not None else None,
-        flow_exe_env=flow.flow_exe_env,
-        flow_exe_env_name=exe_env_item.name_cn if exe_env_item is not None else None,
         flow_biz_type=flow.flow_biz_type,
         flow_biz_type_name=biz_type_item.name_cn if biz_type_item is not None else None,
         max_retry_number=flow.max_retry_number,
@@ -60,21 +58,14 @@ def flows2FlowDetailModels(flows:list[Flow]) -> list[FlowDetailModel]:
     # search meta data
     app = AppConfigManager()
     codes = []
-    codes.append(app.get_flow_exe_env_meta_code())
     codes.append(app.get_flow_biz_type_meta_code())
     codes.append(app.get_flow_rpa_type_meta_code())
     meta_datas = meta_data_manager_core.search_meta_datas_by_codes(codes=codes)
     if meta_datas is None or len(meta_datas) <= 0:
-        raise EasyRpaException("flow meta data is empty(env,biz_type,rpa_type)",EasyRpaExceptionCodeEnum.DATA_EMPTY.value[1],None,None)
+        raise EasyRpaException("flow meta data is empty(biz_type,rpa_type)",EasyRpaExceptionCodeEnum.DATA_EMPTY.value[1],None,None)
     meta_data_map = {item.code:item for item in meta_datas}
 
     # search meta data item
-    if meta_data_map[app.get_flow_exe_env_meta_code()] is None:
-        raise EasyRpaException("flow exe env meta data is empty",EasyRpaExceptionCodeEnum.DATA_EMPTY.value[1],None,None)
-    exe_env_item_map = meta_data_item_manager_core.get_meta_data_item_map(meta_id=meta_data_map[app.get_flow_exe_env_meta_code()].id)
-    if exe_env_item_map is None or len(exe_env_item_map) <= 0:
-        raise EasyRpaException("flow exe env meta data item is empty",EasyRpaExceptionCodeEnum.DATA_EMPTY.value[1],None,None)
-
     if meta_data_map[app.get_flow_biz_type_meta_code()] is None:
         raise EasyRpaException("flow biz type meta data is empty",EasyRpaExceptionCodeEnum.DATA_EMPTY.value[1],None,None)
     biz_type_item_map = meta_data_item_manager_core.get_meta_data_item_map(meta_id=meta_data_map[app.get_flow_biz_type_meta_code()].id)
@@ -93,9 +84,8 @@ def flows2FlowDetailModels(flows:list[Flow]) -> list[FlowDetailModel]:
         if flow is None:
             continue
         site_detail_item = site_details_map[flow.site_id] if flow.site_id in site_details_map else None
-        exe_env_item = exe_env_item_map[str(flow.flow_exe_env)] if str(flow.flow_exe_env) in exe_env_item_map else None
         biz_type_item = biz_type_item_map[str(flow.flow_biz_type)] if str(flow.flow_biz_type) in biz_type_item_map else None
         rpa_type_item = rpa_type_item_map[str(flow.flow_rpa_type)] if str(flow.flow_rpa_type) in rpa_type_item_map else None
-        result.append(flow2FlowDetailModel(flow,site_detail_item,exe_env_item,biz_type_item,rpa_type_item))
+        result.append(flow2FlowDetailModel(flow,site_detail_item,biz_type_item,rpa_type_item))
 
     return result

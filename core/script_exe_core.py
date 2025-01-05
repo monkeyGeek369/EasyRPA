@@ -6,7 +6,7 @@ from easyrpa.models.scripty_exe_result import ScriptExeResult
 import easyrpa.tools.debug_tools as my_debug
 from easyrpa.tools import logs_tool,str_tools,blake3_tool
 from easyrpa.script_exe import sync_python_script
-import json
+import json,os
 
 def request_check_script_exe(flow_code:str,flow_standard_message:str,
                     flow_exe_script:str,sub_source:int,flow_config:str) -> bool:
@@ -140,18 +140,28 @@ def script_exe_base(flow_code:str,script_type:str,flow_standard_message:str,
         raise EasyRpaException(script_type + "script hash generate error",EasyRpaExceptionCodeEnum.EXECUTE_ERROR.value[1],None,flow_code)
 
     # check script is exist
-    is_exist = sync_python_script.script_is_exist(flow_code=flow_code,script_type=script_type,script_hash=script_hash)
+    project_root = get_project_root_path()
+    is_exist = sync_python_script.script_is_exist(flow_code=flow_code,script_type=script_type,script_hash=script_hash,project_root=project_root)
 
     # if not exist, create script file
     if not is_exist:
-        sync_python_script.create_script_file(flow_code=flow_code,script_type=script_type,script_hash=script_hash,script=flow_exe_script)
+        sync_python_script.create_script_file(flow_code=flow_code,script_type=script_type,script_hash=script_hash,script=flow_exe_script,project_root=project_root)
 
     # builder script exe params
     param = my_debug.env_params_build(header=None,sub_source=sub_source,flow_standard_message=flow_standard_message,flow_config=flow_config)
     logs_tool.log_business_info("script_exe_base","script exe params",param)
 
     # run script
-    script_result = sync_python_script.sync_script_run(flow_code=flow_code,script_type=script_type,script_hash=script_hash,params=param)
+    script_result = sync_python_script.sync_script_run(flow_code=flow_code,script_type=script_type,script_hash=script_hash,params=param,project_root=project_root)
     
     logs_tool.log_business_info("script_exe_base","script exe result",script_result)
     return script_result
+
+def get_project_root_path() -> str:
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    while not os.path.isfile(os.path.join(project_root, 'setup.py')) and not os.path.isfile(os.path.join(project_root, 'requirements.txt')):
+        if project_root == os.path.dirname(project_root):
+            project_root = None
+            break
+        project_root = os.path.dirname(project_root)
+    return project_root

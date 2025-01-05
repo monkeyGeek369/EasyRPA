@@ -70,7 +70,6 @@ class Flow(Base):
     flow_code = Column(String(255), nullable=False, comment='流程code')
     flow_name = Column(String(255), nullable=False, comment='流程名称')
     flow_rpa_type = Column(Integer, nullable=False, comment='流程自动化类型（1网站/2桌面端）')
-    flow_exe_env = Column(Integer, nullable=False, comment='流程执行环境（1、playwright/2、selenium')
     flow_biz_type = Column(Integer, nullable=False, comment='流程业务类型（1、数据爬取/2、数据推送）')
     max_retry_number = Column(Integer, comment='最大重试次数')
     max_exe_time = Column(BigInteger, comment='最大执行时间（秒）')

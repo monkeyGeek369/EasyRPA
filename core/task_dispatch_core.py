@@ -18,7 +18,7 @@ from easyrpa.tools.json_tools import JsonTool
 thread_lock_robot_lock = threading.RLock()
 thread_lock_robot_unlock = threading.RLock()
 
-def flow_task_dispatch(flow:Flow,flow_task:FlowTask,flow_exe_env:str) -> bool:
+def flow_task_dispatch(flow:Flow,flow_task:FlowTask) -> bool:
      is_dispatch_success = False
      is_this_lock = False
 
@@ -207,13 +207,8 @@ def task_retry(task:FlowTask):
         if number_tool.num_is_not_empty(task.result_code) and str(task.result_code) not in retry_codes:
             raise EasyRpaException("retry code not config, can not retry",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
 
-        # search flow exe env
-        rpa_exe_env = flow_manager_core.get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
-        if rpa_exe_env is None or str_tools.str_is_empty(rpa_exe_env.name_en):
-            raise EasyRpaException("flow exe env not found",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,task.result_code)
-
         # dispatch task
-        result = flow_task_dispatch(flow=flow,flow_task=task,flow_exe_env=rpa_exe_env.name_en)
+        result = flow_task_dispatch(flow=flow,flow_task=task)
 
         # update task
         update_flow_task = None

@@ -34,7 +34,6 @@ def search_flows(dto:FlowSearchReqModel) -> FlowSearchResModel:
     flow_obj.flow_code = dto.get("flow_code")
     flow_obj.flow_name = dto.get("flow_name")
     flow_obj.flow_rpa_type = dto.get("flow_rpa_type")
-    flow_obj.flow_exe_env = dto.get("flow_exe_env")
     flow_obj.flow_biz_type = dto.get("flow_biz_type")
     flow_obj.retry_code = dto.get("retry_code")
     flow_obj.is_active = dto.get("is_active")
@@ -68,7 +67,6 @@ def add_flow(dto:FlowAddReqModel) -> bool:
         flow_code=dto.get("flow_code"),
         flow_name=dto.get("flow_name"),
         flow_rpa_type=dto.get("flow_rpa_type"),
-        flow_exe_env=dto.get("flow_exe_env"),
         flow_biz_type=dto.get("flow_biz_type"),
         max_retry_number=dto.get("max_retry_number"),
         max_exe_time=dto.get("max_exe_time"),
@@ -94,7 +92,6 @@ def update_flow(dto:FlowUpdateReqModel) -> bool:
         flow_code=dto.get("flow_code"),
         flow_name=dto.get("flow_name"),
         flow_rpa_type=dto.get("flow_rpa_type"),
-        flow_exe_env=dto.get("flow_exe_env"),
         flow_biz_type=dto.get("flow_biz_type"),
         max_retry_number=dto.get("max_retry_number"),
         max_exe_time=dto.get("max_exe_time"),
@@ -122,18 +119,6 @@ def delete_flow(id:int) -> bool:
 def get_flow_rpa_type(params) -> MetaDataItemSearchResModel:
     app = AppConfigManager()
     meta_code = app.get_flow_rpa_type_meta_code()
-    data = meta_data_item_manager_core.get_meta_data_item_by_meta_code(code=meta_code)
-    result = MetaDataItemSearchResModel(
-        data=data
-    )
-
-    return JsonTool.any_to_dict(result)
-
-@flow_api_bp.route('/flow/exe/env', methods=['POST'])
-@easyrpa_request_wrapper
-def get_flow_exe_env(params) -> MetaDataItemSearchResModel:
-    app = AppConfigManager()
-    meta_code = app.get_flow_exe_env_meta_code()
     data = meta_data_item_manager_core.get_meta_data_item_by_meta_code(code=meta_code)
     result = MetaDataItemSearchResModel(
         data=data

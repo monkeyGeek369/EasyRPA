@@ -52,13 +52,6 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         if flow_configuration is None:
             raise EasyRpaException("""flow configuration {} not found""".format(dto.flow_configuration_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
         
-        # 获取执行环境元数据
-        rpa_exe_env = get_flow_exe_env_meta_data(flow_exe_env=flow.flow_exe_env)
-        if rpa_exe_env is None or rpa_exe_env.name_en is None:
-            raise EasyRpaException("""flow {} not found exe env""".format(dto.flow_id),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,dto)
-        app = AppConfigManager()
-        conda_env = app.get_console_default_conda_env()
-
         # 执行校验脚本
         request_check_script_exe(flow_code=flow.flow_code,flow_standard_message=dto.request_standard_message,flow_exe_script=flow.request_check_script,sub_source=dto.sub_source,flow_config=flow_configuration.config_json)
 
@@ -77,30 +70,13 @@ def flow_task_subscribe(dto:FlowTaskSubscribeDTO)-> FlowTaskSubscribeResultDTO:
         flow_task = FlowTaskDBManager.create_flow_task(flow_task)
 
         # 流程任务分发
-        flow_task_dispatch(flow,flow_task,flow_exe_env=rpa_exe_env.name_en)
+        flow_task_dispatch(flow,flow_task)
 
         # 返回结果
         return FlowTaskSubscribeResultDTO(flow_task.id,True,"流程任务创建成功")
     except Exception as e:
         return FlowTaskSubscribeResultDTO(flow_task.id,False,str(e))
     
-def get_flow_exe_env_meta_data(flow_exe_env:int) -> MetaDataItem:
-    if number_tool.num_is_empty(flow_exe_env):
-        raise EasyRpaException("""flow exe env is null""".format(flow_exe_env),EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,None)
-    app = AppConfigManager()
-    code = app.get_flow_exe_env_meta_code()
-    meta_data = MetaDataDbManager.get_meta_data_by_code(code=code)
-    if meta_data is None:
-        raise EasyRpaException("""flow exe env meta data {} not found,please config meta data""".format(code),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,flow_exe_env)
-    
-    meta_data_item = MetaDataItemDbManager.get_meta_data_item_by_meta_id_and_business_code(meta_id=meta_data.id,business_code=str(flow_exe_env))
-    if meta_data_item is None:
-        raise EasyRpaException("""flow exe env meta data item not found,please config meta data item""".format(code),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,flow_exe_env)
-    if str_tools.str_is_empty(meta_data_item.name_en):
-        raise EasyRpaException("""flow exe env meta data item name_en not found,please config meta data item""".format(code),EasyRpaExceptionCodeEnum.DATA_NOT_FOUND.value[1],None,flow_exe_env)
-
-    return meta_data_item
-
 def search_flows_by_params(do:Flow,page: int,page_size: int,sorts: list[SortBaseModel]) -> list[FlowDetailModel]:
     # search db
     db_result = FlowDbManager.select_page_list(do=do,
@@ -125,8 +101,6 @@ def base_check(flow:Flow):
         raise EasyRpaException("flow_name is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     if num_is_empty(flow.flow_rpa_type):
         raise EasyRpaException("flow_rpa_type is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
-    if num_is_empty(flow.flow_exe_env):
-        raise EasyRpaException("flow_exe_env is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     if num_is_empty(flow.flow_biz_type):
         raise EasyRpaException("flow_biz_type is empty",EasyRpaExceptionCodeEnum.DATA_NULL.value[1],None,flow)
     if num_is_empty(flow.max_retry_number):
