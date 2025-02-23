@@ -83,6 +83,10 @@ class JobTypeAbstractClass(ABC):
                 dispatch_record.status = JobStatusEnum.DISPATCH_FAIL.value[1]
                 dispatch_record.result_message = str(e)
                 DispatchRecordDBManager.update_dispatch_record(data=dispatch_record)
+                
+                # 更新job记录:last_record_id
+                up_job = DispatchJob(id=job.id,last_record_id=dispatch_record.id)
+                DispatchJobDBManager.update_dispatch_job(data=up_job)
 
     @abstractmethod
     def job_type_exe_param_builder(self,job:DispatchJob,record:DispatchRecord,sub_source:int) -> FlowTaskSubscribeDTO:
