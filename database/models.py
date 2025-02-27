@@ -61,6 +61,22 @@ class DispatchRecord(Base):
     trace_id = Column(String(255), comment='跟踪链路id')
     is_active = Column(BIT(1), nullable=False, comment='是否启用')
 
+class DispatchHandlerData(Base):
+    __tablename__ = 'dispatch_handler_data'
+    __table_args__ = {'comment': '调度处理数据表'}
+
+    id = Column(BigInteger, primary_key=True, unique=True, comment='调度记录主键id')
+    job_id = Column(BigInteger, nullable=False, comment='所属jobid')
+    data_job_id = Column(BigInteger, comment='调度数据归属jobid')
+    data_id = Column(BigInteger, comment='调度数据id')
+    status = Column(Integer, nullable=False, comment='处理状态（1、处理中，2、成功，3失败）')
+    created_id = Column(BigInteger, nullable=False, comment='创建人')
+    created_time = Column(DateTime, nullable=False, comment='创建日期')
+    modify_id = Column(BigInteger, comment='修改人')
+    modify_time = Column(DateTime, comment='修改日期')
+    trace_id = Column(String(255), comment='跟踪链路id')
+    is_active = Column(BIT(1), nullable=False, comment='是否启用')
+
 class Flow(Base):
     __tablename__ = 'flow'
     __table_args__ = {'comment': '流程表'}
