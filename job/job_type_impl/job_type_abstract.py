@@ -4,7 +4,7 @@ from configuration.app_config_manager import AppConfigManager
 from database.dispatch_job_db_manager import DispatchJobDBManager
 from easyrpa.models.easy_rpa_exception import EasyRpaException
 from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
-from database.models import DispatchJob,DispatchRecord
+from database.models import DispatchJob,DispatchRecord,DispatchHandlerData
 from easyrpa.tools import str_tools,number_tool,logs_tool
 from check.dispatch_job_check import check_dispatch_job
 from easyrpa.enums.job_type_enum import JobTypeEnum
@@ -15,6 +15,7 @@ from database.meta_data_item_db_manager import MetaDataItemDbManager
 from configuration.app_config_manager import AppConfigManager
 from core.flow_manager_core import flow_task_subscribe
 from easyrpa.models.flow.flow_task_exe_result_notify_dto import FlowTaskExeResultNotifyDTO
+from database.dispatch_handler_data_db_manager import DispatchHandlerDataDBManager
 
 class JobTypeAbstractClass(ABC):
     def __init__(self, name:str, type:int):
@@ -87,6 +88,10 @@ class JobTypeAbstractClass(ABC):
                 # 更新job记录:last_record_id
                 up_job = DispatchJob(id=job.id,last_record_id=dispatch_record.id)
                 DispatchJobDBManager.update_dispatch_job(data=up_job)
+
+                # update handler record
+                if dispatch_record.handler_data_id is not None:
+                    DispatchHandlerDataDBManager.update_dispatch_handler_data(data=DispatchHandlerData(id=dispatch_record.handler_data_id,status=JobStatusEnum.DISPATCH_FAIL.value[1]))
 
     @abstractmethod
     def job_type_exe_param_builder(self,job:DispatchJob,record:DispatchRecord,sub_source:int) -> FlowTaskSubscribeDTO:

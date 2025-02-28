@@ -60,6 +60,7 @@ class DispatchRecord(Base):
     modify_time = Column(DateTime, comment='修改日期')
     trace_id = Column(String(255), comment='跟踪链路id')
     is_active = Column(BIT(1), nullable=False, comment='是否启用')
+    handler_data_id = Column(BigInteger, comment='对应处理数据id')
 
 class DispatchHandlerData(Base):
     __tablename__ = 'dispatch_handler_data'

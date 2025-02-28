@@ -53,6 +53,9 @@ class DispatchRecordDBManager:
             # result_message不为空则可更新
             if str_tools.str_is_not_empty(data.result_message):
                 dispatch_record.result_message = data.result_message
+            
+            if number_tool.num_is_not_empty(data.handler_data_id):
+                dispatch_record.handler_data_id = data.handler_data_id
 
             update_common_fields(dispatch_record)
             session.commit()

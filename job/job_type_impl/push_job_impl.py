@@ -66,14 +66,21 @@ class PushJobImplClass(JobTypeAbstractClass):
             DispatchJobDBManager.update_dispatch_job(data=up_job)
 
             # update handler data
+            handler_data = None
             if is_error_handler_data:
                 # update
-                data = DispatchHandlerData(id=error_handler_datas[0].id,status=JobStatusEnum.DISPATCHING.value[1])
-                DispatchHandlerDataDBManager.update_dispatch_handler_data(data=data)
+                handler_data = DispatchHandlerData(id=error_handler_datas[0].id,status=JobStatusEnum.DISPATCHING.value[1])
+                DispatchHandlerDataDBManager.update_dispatch_handler_data(data=handler_data)
             else:
                 # insert
-                data = DispatchHandlerData(job_id=job.id,data_job_id=job.parent_job,data_id=next_data.id,status=JobStatusEnum.DISPATCHING.value[1])
-                DispatchHandlerDataDBManager.create_dispatch_handler_data(dispatch_handler_data=data)
+                handler_data = DispatchHandlerData(job_id=job.id,data_job_id=job.parent_job,data_id=next_data.id,status=JobStatusEnum.DISPATCHING.value[1])
+                handler_data = DispatchHandlerDataDBManager.create_dispatch_handler_data(dispatch_handler_data=handler_data)
+
+            # update dispatch record
+            if handler_data is not None:
+                up_record = DispatchRecord(id=record.id,handler_data_id=handler_data.id)
+                DispatchRecordDBManager.update_dispatch_record(data=up_record)
+                record.handler_data_id = handler_data.id
 
             return sub_param
     
@@ -111,6 +118,10 @@ class PushJobImplClass(JobTypeAbstractClass):
                                     result_message=JobStatusEnum.DISPATCH_SUCCESS.value[0])
             DispatchRecordDBManager.update_dispatch_record(data=up_record)
 
+            # update handler data
+            if record.handler_data_id is not None:
+                DispatchHandlerDataDBManager.update_dispatch_handler_data(data=DispatchHandlerData(id=record.handler_data_id,status=JobStatusEnum.DISPATCH_SUCCESS.value[1]))
+
             # log record
             logs_tool.log_business_info("job_type_result_handler","push task result job handler success",dto)
 
@@ -122,5 +133,8 @@ class PushJobImplClass(JobTypeAbstractClass):
                                         status=JobStatusEnum.DISPATCH_FAIL.value[1],
                                         result_message=str(e))
                 DispatchRecordDBManager.update_dispatch_record(data=up_record)
+
+                if record.handler_data_id is not None:
+                    DispatchHandlerDataDBManager.update_dispatch_handler_data(data=DispatchHandlerData(id=record.handler_data_id,status=JobStatusEnum.DISPATCH_FAIL.value[1]))
 
             raise e
