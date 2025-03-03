@@ -32,7 +32,8 @@ def record2RecordDetailModel(data:DispatchRecord,jobs_map:dict[int,DispatchJob],
         modify_id=data.modify_id,
         modify_time=data.modify_time,
         trace_id=data.trace_id,
-        is_active=data.is_active
+        is_active=data.is_active,
+        handler_data_id=data.handler_data_id
     )
 
     return detail

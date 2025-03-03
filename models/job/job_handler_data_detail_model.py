@@ -3,15 +3,14 @@ from easyrpa.models.base.response_do_base_model import ResponseDoBaseModel
 
 
 @dataclass
-class JobRecordDetailModel(ResponseDoBaseModel):
+class JobHandlerDataDetailModel(ResponseDoBaseModel):
     id:int
     job_id:int
     job_name:str    
-    flow_code:str
-    flow_name:str
-    flow_task_id:int
+    data_job_id:int
+    data_job_name:str
+    data_id:int
     status:int
     status_name:str
-    result_message:str
-    handler_data_id:int
+
 
