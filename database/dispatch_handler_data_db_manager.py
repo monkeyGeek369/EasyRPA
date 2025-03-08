@@ -90,13 +90,13 @@ class DispatchHandlerDataDBManager:
 
         # 执行查询
         query = session.query(DispatchHandlerData).filter(
-            DispatchHandlerData.id == do.id if do.id is not None else True,
-            DispatchHandlerData.job_id == do.job_id if do.job_id is not None else True,
-            DispatchHandlerData.data_job_id == do.data_job_id if do.data_job_id is not None else True,
-            DispatchHandlerData.data_id == do.data_id if do.data_id is not None else True,
-            DispatchHandlerData.status == do.status if do.status is not None else True,
-            DispatchHandlerData.created_id == do.created_id if do.created_id is not None else True,
-            DispatchHandlerData.modify_id == do.modify_id if do.modify_id is not None else True,
+            DispatchHandlerData.id == do.id if do.id != '' and do.id is not None and number_tool.num_is_not_empty(int(do.id)) else True,
+            DispatchHandlerData.job_id == do.job_id if do.job_id != '' and do.job_id is not None and number_tool.num_is_not_empty(int(do.job_id)) else True,
+            DispatchHandlerData.data_job_id == do.data_job_id if do.data_job_id != '' and do.data_job_id is not None and number_tool.num_is_not_empty(int(do.data_job_id)) else True,
+            DispatchHandlerData.data_id == do.data_id if do.data_id != '' and do.data_id is not None and number_tool.num_is_not_empty(int(do.data_id)) else True,
+            DispatchHandlerData.status == do.status if do.status != '' and do.status is not None and number_tool.num_is_not_empty(int(do.status)) else True,
+            DispatchHandlerData.created_id == do.created_id if do.created_id != '' and do.created_id is not None and number_tool.num_is_not_empty(int(do.created_id)) else True,
+            DispatchHandlerData.modify_id == do.modify_id if do.modify_id != '' and do.modify_id is not None and number_tool.num_is_not_empty(int(do.modify_id)) else True,
             DispatchHandlerData.is_active == do.is_active if do.is_active is not None else True
             )
         if len(sort_conditions) > 0:
@@ -109,13 +109,13 @@ class DispatchHandlerDataDBManager:
     @db_session
     def select_count(session,do:DispatchHandlerData) -> int:
         query = session.query(DispatchHandlerData).filter(
-            DispatchHandlerData.id == do.id if do.id is not None else True,
-            DispatchHandlerData.job_id == do.job_id if do.job_id is not None else True,
-            DispatchHandlerData.data_job_id == do.data_job_id if do.data_job_id is not None else True,
-            DispatchHandlerData.data_id == do.data_id if do.data_id is not None else True,
-            DispatchHandlerData.status == do.status if do.status is not None else True,
-            DispatchHandlerData.created_id == do.created_id if do.created_id is not None else True,
-            DispatchHandlerData.modify_id == do.modify_id if do.modify_id is not None else True,
+            DispatchHandlerData.id == do.id if do.id != '' and do.id is not None and number_tool.num_is_not_empty(int(do.id)) else True,
+            DispatchHandlerData.job_id == do.job_id if do.job_id != '' and do.job_id is not None and number_tool.num_is_not_empty(int(do.job_id)) else True,
+            DispatchHandlerData.data_job_id == do.data_job_id if do.data_job_id != '' and do.data_job_id is not None and number_tool.num_is_not_empty(int(do.data_job_id)) else True,
+            DispatchHandlerData.data_id == do.data_id if do.data_id != '' and do.data_id is not None and number_tool.num_is_not_empty(int(do.data_id)) else True,
+            DispatchHandlerData.status == do.status if do.status != '' and do.status is not None and number_tool.num_is_not_empty(int(do.status)) else True,
+            DispatchHandlerData.created_id == do.created_id if do.created_id != '' and do.created_id is not None and number_tool.num_is_not_empty(int(do.created_id)) else True,
+            DispatchHandlerData.modify_id == do.modify_id if do.modify_id != '' and do.modify_id is not None and number_tool.num_is_not_empty(int(do.modify_id)) else True,
             DispatchHandlerData.is_active == do.is_active if do.is_active is not None else True
             )
         return query.count()

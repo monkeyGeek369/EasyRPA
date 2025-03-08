@@ -40,8 +40,14 @@ class PushJobImplClass(JobTypeAbstractClass):
                 is_error_handler_data = True
             elif number_tool.num_is_not_empty(job.last_record_id):
                 last_record = DispatchRecordDBManager.get_dispatch_record_by_id(id=job.last_record_id)
-                if last_record is not None and last_record.status == JobStatusEnum.DISPATCH_SUCCESS.value[1]:
-                    next_data = DispatchDataDBManager.get_next_sort_asc_by_id(id=job.current_data_id,job_id=job.parent_job)
+                if last_record is not None and (last_record.status == JobStatusEnum.DISPATCH_SUCCESS.value[1] or last_record.status == JobStatusEnum.DISPATCHING.value[1]):
+                    # get executing handler data
+                    executing_handler_datas = DispatchHandlerDataDBManager.get_all_by_status(status=JobStatusEnum.DISPATCHING.value[1])
+                    if executing_handler_datas is not None and len(executing_handler_datas) > 0:
+                        max_data_id = max([item.data_id for item in executing_handler_datas])
+                        next_data = DispatchDataDBManager.get_next_sort_asc_by_id(id=max_data_id,job_id=job.parent_job)
+                    else:
+                        next_data = DispatchDataDBManager.get_next_sort_asc_by_id(id=job.current_data_id,job_id=job.parent_job)
                 else:
                     # get current_data_id
                     next_data = DispatchDataDBManager.get_dispatch_data_by_id(id=job.current_data_id)
