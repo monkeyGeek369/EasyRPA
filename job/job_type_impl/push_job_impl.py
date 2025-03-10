@@ -140,7 +140,4 @@ class PushJobImplClass(JobTypeAbstractClass):
                                         result_message=str(e))
                 DispatchRecordDBManager.update_dispatch_record(data=up_record)
 
-                if record.handler_data_id is not None:
-                    DispatchHandlerDataDBManager.update_dispatch_handler_data(data=DispatchHandlerData(id=record.handler_data_id,status=JobStatusEnum.DISPATCH_FAIL.value[1]))
-
             raise e

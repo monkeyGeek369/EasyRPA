@@ -1,4 +1,4 @@
-from database.models import FlowTask,Flow,FlowTaskLog
+from database.models import FlowTask,Flow,FlowTaskLog,DispatchHandlerData
 from easyrpa.models.agent_models.flow_task_exe_req_dto import FlowTaskExeReqDTO
 import requests,random,datetime,threading
 from database.flow_task_db_manager import FlowTaskDBManager
@@ -13,6 +13,9 @@ from easyrpa.enums.easy_rpa_exception_code_enum import EasyRpaExceptionCodeEnum
 from core import robot_manager_core,task_manager_core,flow_manager_core
 from easyrpa.enums.robot_status_type_enum import RobotStatusTypeEnum
 from easyrpa.tools.json_tools import JsonTool
+from database.dispatch_handler_data_db_manager import DispatchHandlerDataDBManager
+from easyrpa.enums.job_status_enum import JobStatusEnum
+from database.dispatch_record_db_manager import DispatchRecordDBManager
 
 # local obj
 thread_lock_robot_lock = threading.RLock()
@@ -221,6 +224,11 @@ def task_retry(task:FlowTask):
         update_flow_task = FlowTask(id=task.id,status=FlowTaskStatusEnum.FAIL.value[1])
         FlowTaskDBManager.update_flow_task(update_flow_task)
         FlowTaskLogDBManager.create_flow_task_log(FlowTaskLog(task_id=task.id,log_type=LogTypeEnum.TXT.value[1],message="task retry error , message: " + str(e)))
+
+        if task.biz_no is not None:
+            record = DispatchRecordDBManager.get_dispatch_record_by_id(id=int(task.biz_no))
+            if record is not None and record.handler_data_id is not None:
+                DispatchHandlerDataDBManager.update_dispatch_handler_data(data=DispatchHandlerData(id=record.handler_data_id,status=JobStatusEnum.DISPATCH_FAIL.value[1]))
 
         # get next waiting task
         waiting_tasks = task_manager_core.search_waiting_tasks()
