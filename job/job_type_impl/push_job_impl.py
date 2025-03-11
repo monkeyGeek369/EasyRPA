@@ -133,11 +133,8 @@ class PushJobImplClass(JobTypeAbstractClass):
 
         except Exception as e:
             logs_tool.log_business_error("job_type_result_handler","push task result job handler fail",dto,e)
-
+            
             if record is not None:
-                up_record = DispatchRecord(id=record.id,
-                                        status=JobStatusEnum.DISPATCH_FAIL.value[1],
-                                        result_message=str(e))
+                up_record = DispatchRecord(id=record.id,result_message=str(e))
                 DispatchRecordDBManager.update_dispatch_record(data=up_record)
-
             raise e
