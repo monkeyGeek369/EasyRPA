@@ -127,8 +127,16 @@ class DispatchHandlerDataDBManager:
         return session.query(DispatchHandlerData).filter(DispatchHandlerData.id.in_(ids)).all()
     
     @db_session
-    def get_all_by_status(session, status: int) -> list[DispatchHandlerData]:
-        if status is None:
+    def get_all_by_status(session,job_id: int, status: int) -> list[DispatchHandlerData]:
+        if status is None or job_id is None:
             return []
-        return session.query(DispatchHandlerData).filter(DispatchHandlerData.status == status).all()
+        return session.query(DispatchHandlerData).filter(DispatchHandlerData.job_id == job_id, DispatchHandlerData.status == status).all()
+    
+    @db_session
+    def get_latest_job(session, job_id: int, status: list[int]) -> DispatchHandlerData:
+        if status is None or job_id is None:
+            return None
+        return session.query(DispatchHandlerData).filter(DispatchHandlerData.job_id == job_id, DispatchHandlerData.status.in_(status)).order_by(DispatchHandlerData.id.desc()).first()
+    
+
     
