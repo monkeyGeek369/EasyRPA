@@ -190,7 +190,7 @@ class RobotStatu(Base):
     id = Column(BigInteger, primary_key=True, unique=True, comment='机器人状态主键')
     robot_code = Column(String(255), nullable=False, comment='机器人code')
     robot_ip = Column(String(50), nullable=False, comment='机器人ip')
-    status = Column(Integer, nullable=False, comment='机器人状态（1已关机2空闲3执行中4已关机）')
+    status = Column(Integer, nullable=False, comment='机器人状态（1已关机2空闲3执行中）')
     port = Column(Integer, nullable=True, comment='服务端口')
     current_task_id = Column(BigInteger, comment='当前任务id')
     created_id = Column(BigInteger, nullable=False, comment='创建人')
